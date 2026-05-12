@@ -1,0 +1,33 @@
+@layer base {
+  :root {
+    --background: 125 28% 14%;    /* #1A2E1C - Derin Arka Plan */
+    --foreground: 60 92% 95%;     /* #FEFEE3 - Antique Cream */
+    
+    --card: 124 36% 23%;          /* #244F26 - Forest Green */
+    --card-foreground: 60 92% 95%;
+    
+    --popover: 125 28% 14%;
+    --popover-foreground: 60 92% 95%;
+    
+    --primary: 13 100% 86%;       /* #FFC9B9 - Soft Peach */
+    --primary-foreground: 125 28% 14%;
+    
+    --secondary: 16 100% 61%;     /* #FF6B35 - Emergency Orange */
+    --secondary-foreground: 60 92% 95%;
+    
+    --muted: 124 20% 25%;
+    --muted-foreground: 60 20% 80%;
+    
+    --accent: 13 100% 86%;
+    --accent-foreground: 125 28% 14%;
+    
+    --destructive: 16 100% 61%;
+    --destructive-foreground: 60 92% 95%;
+    
+    --border: 124 30% 30%;
+    --input: 124 30% 30%;
+    --ring: 13 100% 86%;
+    
+    --radius: 1rem;
+  }
+}

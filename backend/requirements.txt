@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+langchain
+langchain-google-genai
+langchain-groq
+pinecone-client
+sentence-transformers
+python-dotenv
+pydantic
