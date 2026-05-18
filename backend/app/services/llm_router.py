@@ -1,37 +1,32 @@
 import os
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
+
+# Kendi yazdığımız motorlar ve hafıza sistemleri
 from app.services.rag_engine import store_memory, get_relevant_memories
+from app.services.socratic_engine import analyze_and_question  # 🧠 YENİ BEYNİMİZ
 
 load_dotenv()
 
-# 1. Modellerin Başlatılması {Initialization}
-# Gemini: Yaratıcı ve empatik yoldaşımız
-gemini_generator = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash", # API'de güncel flash modelini kullanıyoruz
-    temperature=0.7, 
-    google_api_key=os.getenv("GEMINI_API_KEY")
-)
-
-# Llama 3.1: Acımasız ve soğukkanlı yargıcımız (Groq üzerinden)
+# 1. Llama 3.1: Acımasız ve soğukkanlı yargıcımız (Groq üzerinden)
+# Not: Gemini'yi socratic_engine içine taşıdığımız için buradan kaldırdık.
 llama_judge = ChatGroq(
     model_name="llama-3.3-70b-versatile",
     temperature=0.0, # Yargıcın yaratıcılığa değil, kesinliğe ihtiyacı var
     groq_api_key=os.getenv("GROQ_API_KEY")
 )
 
-# 2. Yargıç İçin Çıktı Şeması {Output Schema}
+# 2. Yargıç İçin Çıktı Şeması
 class JudgeDecision(BaseModel):
     is_safe: bool = Field(description="Yanıt güvenli, anti-toksik ve tıbbi tavsiye içermiyorsa True.")
     reason: str = Field(description="Kararın kısa mühendislik gerekçesi.")
 
 parser = JsonOutputParser(pydantic_object=JudgeDecision)
 
-# 3. Yargıç Promptu {Judge Prompt}
+# 3. Yargıç Promptu
 judge_prompt_template = PromptTemplate(
     template="""Sen kıdemli bir klinik güvenlik denetmenisin. Aşağıdaki yapay zeka yanıtını incele.
     
@@ -39,8 +34,9 @@ judge_prompt_template = PromptTemplate(
     Yapay Zeka Yanıtı: {ai_response}
     
     Kurallar:
-    1. Tıbbi tavsiye (ilaç, tanı) VERİLEMEZ.
+    1. Tıbbi tavsiye (ilaç, teşhis) KESİNLİKLE VERİLEMEZ.
     2. İçi boş "Her şey mükemmel olacak, gülümse" gibi toksik pozitiflik YAPILAMAZ. Duygular valide edilmelidir.
+    3. Kullanıcı kendine veya başkasına zarar vermekten bahsediyorsa is_safe: False dön.
     
     {format_instructions}""",
     input_variables=["user_message", "ai_response"],
@@ -50,41 +46,41 @@ judge_prompt_template = PromptTemplate(
 judge_chain = judge_prompt_template | llama_judge | parser
 
 async def generate_lunia_response(user_id: str, user_message: str) -> str:
-    """Hafıza destekli ve çift denetimli yanıt üretici."""
+    """Hafıza destekli, Sokratik motorlu ve çift denetimli yanıt üretici."""
     
-    # 1. Adım: Geçmişi Hatırla {Retrieve Memories}
-    # Kullanıcının şu anki sorusuyla ilgili en önemli 3 anıyı getiriyoruz.
+    # 1. Adım: Pinecone'dan Geçmişi Hatırla (RAG)
     past_context = await get_relevant_memories(user_id, user_message)
     
-    # 2. Adım: Gemini için Prompt Hazırla (Sokratik & Hafıza Destekli)
-    generator_prompt = f"""
-    Sen Lunia'sın. Kullanıcının güvenli yoldaşısın.
+    # 2. Adım: Sokratik Motor ile Duygu Analizi ve Yanıt Üretimi
+    socratic_data = await analyze_and_question(user_message, past_context)
     
-    Kullanıcının Geçmiş Hatıraları:
-    {past_context}
+    # Sokratik motorun JSON çıktısını akıcı bir metne çeviriyoruz (Validasyon + Soru)
+    draft_response = f"{socratic_data['validation']} {socratic_data['socratic_question']}"
     
-    Şu Anki Mesaj: {user_message}
+    # Loglama: Arka planda ne döndüğünü görmek için (Terminalde göreceğiz)
+    print(f"\n🧠 [SOKRATİK MOTOR] Duygu: {socratic_data['primary_emotion']} (Yoğunluk: {socratic_data['intensity']}/10)")
     
-    Talimatlar:
-    - Eğer geçmiş hatıralarda ilgili bir durum varsa, ona nazikçe atıfta bulun (Örn: 'Geçen hafta da benzer bir hissin olduğunu paylaşmıştın...').
-    - Sokratik sorgulama yap.
-    - Duyguları valide et.
-    """
+    # 3. Adım: Llama 3.1 ile Güvenlik Kontrolü (Judge)
+    try:
+        decision = await judge_chain.ainvoke({
+            "user_message": user_message,
+            "ai_response": draft_response
+        })
+        
+        # Yargıç güvenli derse taslağı, demezse acil durum mesajını kullan
+        if decision["is_safe"]:
+            final_reply = draft_response
+            print(f"🛡️ [LLAMA YARGIÇ] Karar: GÜVENLİ - Sebep: {decision['reason']}\n")
+        else:
+            final_reply = "Duygularını anlıyorum, ancak güvenlik politikalarım gereği bu konuyu daha derinlemesine konuşmamız riskli olabilir. Bunu profesyonel bir destekle konuşmayı düşünür müsün?"
+            print(f"🚨 [LLAMA YARGIÇ] Karar: RİSKLİ! - Sebep: {decision['reason']}\n")
+            
+    except Exception as e:
+        print(f"Llama Yargıç Hatası: {e}")
+        # Groq çökerse bile sistemi durdurma, taslağı dön
+        final_reply = draft_response
     
-    # Gemini yanıtı üretir
-    gemini_result = await gemini_generator.ainvoke(generator_prompt)
-    draft_response = gemini_result.content
-    
-    # 3. Adım: Llama 3.1 ile Güvenlik Kontrolü {Judge}
-    decision = await judge_chain.ainvoke({
-        "user_message": user_message,
-        "ai_response": draft_response
-    })
-    
-    final_reply = draft_response if decision["is_safe"] else "Duygularını anlıyorum. Bu konuyu biraz daha açmak ister misin?"
-    
-    # 4. Adım: Bu Etkileşimi Hafızaya Kazı {Store Memory}
-    # Bu işlem asenkron olarak arka planda çalışır.
+    # 4. Adım: Bu Etkileşimi Pinecone'a Kaydet
     await store_memory(user_id, user_message, final_reply)
     
     return final_reply

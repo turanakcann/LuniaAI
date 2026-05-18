@@ -1,0 +1,83 @@
+2026-05-16 00:50:57,150 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 14:31:26,961 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 15:16:15,781 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 15:20:18,432 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 15:21:17,023 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 15:25:23,650 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 15:30:46,183 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 16:43:32,248 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 16:43:47,290 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 16:50:09,049 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 16:52:44,154 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 16:54:15,279 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 16:58:57,429 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 17:01:33,122 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 17:03:50,649 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 17:10:27,335 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-16 17:11:24,720 - pinecone.index - INFO - Querying index with top_k=3
+2026-05-16 17:11:25,846 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-05-16 17:11:30,911 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-16 17:11:31,505 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-16 17:11:31,555 - pinecone.index - INFO - Upserting 1 vectors into namespace ''
+2026-05-16 17:12:08,898 - pinecone.index - INFO - Querying index with top_k=3
+2026-05-16 17:12:09,858 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-05-16 17:12:22,076 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-16 17:12:22,631 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-16 17:12:22,675 - pinecone.index - INFO - Upserting 1 vectors into namespace ''
+2026-05-16 17:23:31,538 - pinecone.index - INFO - Querying index with top_k=3
+2026-05-16 17:23:32,609 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-05-16 17:23:41,825 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-16 17:23:42,506 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-16 17:23:42,549 - pinecone.index - INFO - Upserting 1 vectors into namespace ''
+2026-05-16 17:24:04,979 - pinecone.index - INFO - Querying index with top_k=3
+2026-05-16 17:24:05,806 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-05-16 17:24:18,109 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-16 17:24:18,592 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-16 17:24:18,633 - pinecone.index - INFO - Upserting 1 vectors into namespace ''
+2026-05-16 17:29:40,648 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-18 13:36:57,243 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-18 13:41:19,952 - pinecone.index - INFO - Querying index with top_k=3
+2026-05-18 13:41:21,410 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-05-18 13:41:32,980 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-18 13:41:34,064 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-18 13:41:34,125 - pinecone.index - INFO - Upserting 1 vectors into namespace ''
+2026-05-18 13:42:07,583 - pinecone.index - INFO - Querying index with top_k=3
+2026-05-18 13:42:08,568 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-05-18 13:42:25,153 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-18 13:42:26,017 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-18 13:42:26,091 - pinecone.index - INFO - Upserting 1 vectors into namespace ''
+2026-05-18 13:42:32,277 - pinecone.index - INFO - Querying index with top_k=3
+2026-05-18 13:42:32,473 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-05-18 13:42:36,605 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-18 13:42:37,430 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-18 13:42:37,468 - pinecone.index - INFO - Upserting 1 vectors into namespace ''
+2026-05-18 13:43:01,926 - pinecone.index - INFO - Querying index with top_k=3
+2026-05-18 13:43:03,928 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-05-18 13:43:11,957 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-18 13:43:13,053 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-18 13:43:13,124 - pinecone.index - INFO - Upserting 1 vectors into namespace ''
+2026-05-18 13:44:39,004 - pinecone.index - INFO - Querying index with top_k=3
+2026-05-18 13:44:40,031 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-05-18 13:45:04,287 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-18 13:45:05,111 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-18 13:45:05,160 - pinecone.index - INFO - Upserting 1 vectors into namespace ''
+2026-05-18 13:46:02,505 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-18 13:46:31,786 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-18 13:46:40,055 - pinecone.index - INFO - Querying index with top_k=3
+2026-05-18 13:46:41,131 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-05-18 13:47:00,458 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-18 13:47:01,204 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-18 13:47:01,264 - pinecone.index - INFO - Upserting 1 vectors into namespace ''
+2026-05-18 13:49:56,694 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-18 14:02:38,949 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-18 14:10:24,612 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-18 14:11:22,308 - pinecone.index - INFO - Querying index with top_k=3
+2026-05-18 14:11:24,019 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-05-18 14:11:28,270 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-18 14:11:29,152 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-18 14:11:29,561 - pinecone.index - INFO - Upserting 1 vectors into namespace ''
+2026-05-18 14:11:49,486 - pinecone.index - INFO - Querying index with top_k=3
+2026-05-18 14:11:52,100 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+2026-05-18 14:12:01,649 - httpx - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent "HTTP/1.1 200 OK"
+2026-05-18 14:12:02,732 - httpx - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-18 14:12:02,798 - pinecone.index - INFO - Upserting 1 vectors into namespace ''

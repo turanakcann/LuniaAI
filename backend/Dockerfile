@@ -1,29 +1,33 @@
-# 1. Aşama: Hafif bir Python imajı ile başlıyoruz
+# 1. Aşama: Hafif bir Python imajı
 FROM python:3.11-slim
 
-# Çalışma dizinini belirliyoruz
+# Terminal loglarının anında düşmesi ve Python'un pyc dosyası oluşturmasını engellemek için:
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
 WORKDIR /code
 
-# Sistem bağımlılıklarını kuruyoruz (Bcrypt ve Spacy derlemeleri için gerekli)
+# Sistem bağımlılıkları (Bcrypt derlemeleri için)
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Bağımlılıkları kopyalıyoruz (Docker önbelleğini kullanmak için önce sadece bu)
+# Önce bağımlılık listesini kopyala (Docker Caching için)
 COPY requirements.txt .
 
-# Kütüphaneleri kuruyoruz
+# Kütüphaneleri kur
 RUN pip install --no-cache-dir -r requirements.txt
 
-# SpaCy Türkçe modelini indiriyoruz (Risk tespiti için şart)
-RUN python -m spacy download tr_core_news_trf
+# SpaCy Türkçe modelini doğrudan Hugging Face üzerinden indiriyoruz
+# Senior Notu: Hız/Boyut optimizasyonu için Transformer (_trf) yerine Medium (_md) modelini çekiyoruz.
+RUN pip install --no-cache-dir https://huggingface.co/turkish-nlp-suite/tr_core_news_md/resolve/main/tr_core_news_md-1.0-py3-none-any.whl
 
-# Tüm uygulama kodunu kopyalıyoruz
+# Tüm kodları kopyala (.dockerignore dosyan olduğunu varsayıyorum)
 COPY . .
 
-# FastAPI'yi 8000 portundan dışarı açıyoruz
+# Portu dışarı aç
 EXPOSE 8000
 
-# Uygulamayı başlatıyoruz
+# Uygulamayı başlat
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,10 +1,13 @@
 from datetime import datetime, timedelta
 from jose import jwt
 from passlib.context import CryptContext
+from dotenv import load_dotenv
+import os
 
 # Bcrypt yapılandırması
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-SECRET_KEY = "SUPER_SECRET_LUNIA_KEY" # Bunu .env'den çekmelisin!
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY","SUPER_SECRET_LUNIA_KEY_YEDEK") # .env dosyasında
 ALGORITHM = "HS256"
 
 def hash_password(password: str):

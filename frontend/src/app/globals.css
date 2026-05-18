@@ -1,33 +1,76 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+:root, .dark {
+  --background: 125 28% 14%;
+  --foreground: 60 92% 95%;
+  --card: 124 36% 23%;
+  --card-foreground: 60 92% 95%;
+  --popover: 125 28% 14%;
+  --popover-foreground: 60 92% 95%;
+  --primary: 13 100% 86%;
+  --primary-foreground: 125 28% 14%;
+  --secondary: 16 100% 61%;
+  --secondary-foreground: 60 92% 95%;
+  --muted: 124 20% 25%;
+  --muted-foreground: 60 20% 80%;
+  --accent: 13 100% 86%;
+  --accent-foreground: 125 28% 14%;
+  --destructive: 16 100% 61%;
+  --destructive-foreground: 60 92% 95%;
+  --border: 124 30% 30%;
+  --input: 124 30% 30%;
+  --ring: 13 100% 86%;
+  --radius: 1rem;
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+}
+
 @layer base {
-  :root {
-    --background: 125 28% 14%;    /* #1A2E1C - Derin Arka Plan */
-    --foreground: 60 92% 95%;     /* #FEFEE3 - Antique Cream */
-    
-    --card: 124 36% 23%;          /* #244F26 - Forest Green */
-    --card-foreground: 60 92% 95%;
-    
-    --popover: 125 28% 14%;
-    --popover-foreground: 60 92% 95%;
-    
-    --primary: 13 100% 86%;       /* #FFC9B9 - Soft Peach */
-    --primary-foreground: 125 28% 14%;
-    
-    --secondary: 16 100% 61%;     /* #FF6B35 - Emergency Orange */
-    --secondary-foreground: 60 92% 95%;
-    
-    --muted: 124 20% 25%;
-    --muted-foreground: 60 20% 80%;
-    
-    --accent: 13 100% 86%;
-    --accent-foreground: 125 28% 14%;
-    
-    --destructive: 16 100% 61%;
-    --destructive-foreground: 60 92% 95%;
-    
-    --border: 124 30% 30%;
-    --input: 124 30% 30%;
-    --ring: 13 100% 86%;
-    
-    --radius: 1rem;
+  * {
+    @apply border-border outline-ring/50;
   }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+/* Cyber Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1c1c1c; /* cyber-gray */
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #3f3f3f; /* cyber-dim */
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #00ff41; /* cyber-green */
 }
