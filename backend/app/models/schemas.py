@@ -50,3 +50,40 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: str = Field(..., description="Kayıtlı e-posta adresi")
     password: str = Field(..., description="Kullanıcı şifresi")
+
+class UserOut(BaseModel):
+    id: int = Field(..., description="Kullanıcının benzersiz ID'si")
+    email: str = Field(..., description="Kullanıcının e-posta adresi")
+    full_name: Optional[str] = Field(default=None, description="Kullanıcının tam adı")
+    role_level: int = Field(..., description="Kullanıcının yetki seviyesi (1=User, 5=SuperAdmin)")
+    is_active: bool = Field(..., description="Kullanıcı hesabının aktiflik durumu")
+
+    class Config:
+        from_attributes = True  # ORM nesnelerini (SQLAlchemy) Pydantic'e dönüştürmek için şart
+
+
+# --- ADMIN ŞEMALARI ---
+
+class MetricsOut(BaseModel):
+    daily_active_users: int = Field(..., description="Bugün aktif olan kullanıcı sayısı")
+    total_messages: int = Field(..., description="Toplam mesaj sayısı")
+    error_rate: float = Field(..., description="Hata oranı (0.0 - 1.0)")
+
+
+class AdminUserOut(BaseModel):
+    id: int = Field(..., description="Kullanıcının benzersiz ID'si")
+    email: str = Field(..., description="Kullanıcının e-posta adresi")
+    full_name: Optional[str] = Field(default=None, description="Kullanıcının tam adı")
+    role_level: int = Field(..., description="Kullanıcının yetki seviyesi")
+    is_active: bool = Field(..., description="Kullanıcı hesabının aktiflik durumu")
+    created_at: datetime = Field(..., description="Hesap oluşturulma tarihi")
+
+    class Config:
+        from_attributes = True
+
+
+class ActivityEventOut(BaseModel):
+    timestamp: str = Field(..., description="Olayın zaman damgası")
+    level: str = Field(..., description="Log seviyesi (INFO, ERROR, WARNING)")
+    event: str = Field(..., description="Olay açıklaması")
+    user: Optional[str] = Field(default=None, description="Olayı tetikleyen kullanıcı")

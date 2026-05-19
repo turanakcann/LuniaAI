@@ -1,5 +1,8 @@
 import os
+import logging
 from langchain_groq import ChatGroq
+
+logger = logging.getLogger(__name__)
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from pydantic import BaseModel, Field
@@ -76,7 +79,7 @@ async def generate_lunia_response(user_id: str, user_message: str) -> str:
             print(f"🚨 [LLAMA YARGIÇ] Karar: RİSKLİ! - Sebep: {decision['reason']}\n")
             
     except Exception as e:
-        print(f"Llama Yargıç Hatası: {e}")
+        logger.error(f"LLM Yargıç Hatası (user_id={user_id}): {e}")
         # Groq çökerse bile sistemi durdurma, taslağı dön
         final_reply = draft_response
     

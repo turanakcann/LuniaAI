@@ -1,8 +1,10 @@
 # backend/app/api/routes.py
-from fastapi import APIRouter, HTTPException, status, Depends, Request
+from fastapi import APIRouter, HTTPException, status, Depends, Request, Query
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime
+import json
 
 # Şemalarımızı schemas.py'den temiz bir şekilde içeri alıyoruz
 from app.models.schemas import DynamicChatRequest, DynamicChatResponse, SessionOut, MessageOut
@@ -146,3 +148,80 @@ async def delete_chat_session(
     db.delete(session)
     db.commit()
     return {"detail": "Oturum ve bağlı tüm mesaj geçmişi başarıyla imha edildi."}
+
+
+# --- 5. VERİ DIŞA AKTARMA ---
+@router.get("/export")
+async def export_user_data(
+    format: str = Query(default="json", description="Dışa aktarma formatı: 'json' veya 'txt'"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Kullanıcının tüm sohbet geçmişini JSON veya TXT formatında dışa aktarır."""
+    if format not in ("json", "txt"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Geçersiz format. 'json' veya 'txt' kullanın."
+        )
+
+    # Kullanıcıya ait tüm oturumları çek
+    sessions = db.query(ChatSession).filter(
+        ChatSession.user_id == str(current_user.id)
+    ).order_by(ChatSession.updated_at.desc()).all()
+
+    if format == "json":
+        export_data = {
+            "sessions": [
+                {
+                    "id": session.id,
+                    "title": session.title,
+                    "created_at": session.created_at.isoformat() if session.created_at else None,
+                    "updated_at": session.updated_at.isoformat() if session.updated_at else None,
+                    "messages": [
+                        {
+                            "id": msg.id,
+                            "role": msg.role,
+                            "content": msg.content,
+                            "created_at": msg.created_at.isoformat() if msg.created_at else None,
+                        }
+                        for msg in db.query(ChatMessage).filter(
+                            ChatMessage.session_id == session.id
+                        ).order_by(ChatMessage.created_at.asc()).all()
+                    ],
+                }
+                for session in sessions
+            ]
+        }
+        content = json.dumps(export_data, ensure_ascii=False, indent=2)
+        return Response(
+            content=content,
+            media_type="application/json",
+            headers={"Content-Disposition": 'attachment; filename="lunia-export.json"'},
+        )
+
+    else:  # format == "txt"
+        lines = []
+        if not sessions:
+            lines.append("Henüz sohbet geçmişi bulunmuyor.")
+        else:
+            for session in sessions:
+                lines.append(f"=== {session.title} ===")
+                lines.append(f"Oturum ID: {session.id}")
+                lines.append(f"Oluşturulma: {session.created_at.isoformat() if session.created_at else '-'}")
+                lines.append(f"Son güncelleme: {session.updated_at.isoformat() if session.updated_at else '-'}")
+                lines.append("")
+                messages = db.query(ChatMessage).filter(
+                    ChatMessage.session_id == session.id
+                ).order_by(ChatMessage.created_at.asc()).all()
+                for msg in messages:
+                    role_label = "Sen" if msg.role == "user" else "Lunia"
+                    lines.append(f"[{role_label}]: {msg.content}")
+                lines.append("")
+                lines.append("-" * 60)
+                lines.append("")
+        content = "\n".join(lines)
+        return Response(
+            content=content,
+            media_type="text/plain; charset=utf-8",
+            headers={"Content-Disposition": 'attachment; filename="lunia-export.txt"'},
+        )

@@ -2,18 +2,28 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel # 👈 BÜYÜK YILDIZ 1: Bunu import etmeliyiz
+import logging
 
 from app.core.security import hash_password, verify_password, create_access_token
 from app.models.database import get_db
 from app.models.user import User
-from app.models.schemas import UserCreate
+from app.models.schemas import UserCreate, UserOut
+from app.models.chat import ChatSession, ChatMessage
 from app.utils.mailer import LuniaMailer
+from app.api.deps import get_current_user
 
 from jose import jwt, JWTError # Token doğrulama için
 import os
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 mailer = LuniaMailer()
+
+@router.get("/me", response_model=UserOut)
+async def get_me(current_user: User = Depends(get_current_user)):
+    """Oturum açmış kullanıcının bilgilerini döndürür."""
+    return current_user
 
 # 👈 BÜYÜK YILDIZ 2: FastAPI'nin beklediği veri kalıbı (Şema)
 class ForgotPasswordRequest(BaseModel):
@@ -38,8 +48,9 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     user = db.query(User).filter(User.email == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Hatalı giriş bilgileri.")
-    
-    token = create_access_token(data={"sub": user.email})
+
+    token = create_access_token(data={"sub": user.email, "role_level": user.role_level})
+    logger.info(f"Login: {user.email} başarıyla giriş yaptı (role_level={user.role_level}).")
     return {"access_token": token, "token_type": "bearer"}
 
 @router.post("/forgot-password")
@@ -86,3 +97,42 @@ async def reset_password(data: UserResetPassword, db: Session = Depends(get_db))
         
     except JWTError:
         raise HTTPException(status_code=400, detail="Token doğrulanırken bir hata oluştu.")
+
+
+class DeleteAccountRequest(BaseModel):
+    password: str
+
+@router.delete("/account")
+async def delete_account(
+    data: DeleteAccountRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Kullanıcı hesabını ve tüm ilişkili verileri siler."""
+    # Şifre doğrulama
+    if not verify_password(data.password, current_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Şifre hatalı.")
+
+    try:
+        # Cascade silme: ChatMessage → ChatSession → User
+        # Önce kullanıcıya ait session id'lerini al
+        session_ids = [
+            s.id for s in db.query(ChatSession).filter(ChatSession.user_id == current_user.id).all()
+        ]
+
+        # ChatMessage kayıtlarını sil
+        if session_ids:
+            db.query(ChatMessage).filter(ChatMessage.session_id.in_(session_ids)).delete(synchronize_session=False)
+
+        # ChatSession kayıtlarını sil
+        db.query(ChatSession).filter(ChatSession.user_id == current_user.id).delete(synchronize_session=False)
+
+        # User kaydını sil
+        db.delete(current_user)
+
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Hesap silinirken bir hata oluştu.")
+
+    return {"message": "Hesabınız başarıyla silindi."}

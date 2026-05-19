@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/src/context/ThemeContext";
 
 // 90'lar Terminal Hissi
 const spaceMono = Space_Mono({ 
@@ -22,10 +23,12 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body className={`${spaceMono.variable} font-mono bg-cyber-black text-cyber-green antialiased selection:bg-cyber-amber selection:text-cyber-black`}>
-        {/* Tüm sayfalar bu kapsayıcının içinde renderlanacak */}
-        <div className="relative min-h-screen overflow-hidden">
-          {children}
-        </div>
+        <ThemeProvider>
+          {/* Tüm sayfalar bu kapsayıcının içinde renderlanacak */}
+          <div className="relative min-h-screen overflow-hidden">
+            {children}
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import api from "@/src/lib/api"; // Görece yol kullanıyorsan: "../../../../lib/api"
-import { MessageSquare, Plus, Menu, X, LogOut, Settings, Trash2, Edit2, Download, AlertTriangle, User } from "lucide-react";
+import { MessageSquare, Plus, Menu, X, LogOut, Settings, Trash2, Edit2, Download, AlertTriangle } from "lucide-react";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Gelecek backend verileri için tip tanımlamaları
 type ChatSession = {
@@ -20,6 +20,18 @@ type UserProfile = {
   role_level: number;
 };
 
+// role_level sayısal değerini okunabilir etikete çevirir
+function getRoleLabel(roleLevel: number): string {
+  switch (roleLevel) {
+    case 1: return "Kullanıcı";
+    case 2: return "Analist";
+    case 3: return "Moderatör";
+    case 4: return "Admin";
+    case 5: return "SuperAdmin";
+    default: return "Bilinmiyor";
+  }
+}
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -28,35 +40,163 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [loadingData, setLoadingData] = useState(true);
+  const [sessionsError, setSessionsError] = useState<string | null>(null);
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
+  // sessionRefreshKey artırıldığında useEffect sessions'ı yeniden çeker
+  const [sessionRefreshKey, setSessionRefreshKey] = useState(0);
+
+  // Modal için bağımsız state'ler
+  const [modalUser, setModalUser] = useState<UserProfile | null>(null);
+  const [isModalLoading, setIsModalLoading] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
+
+  // Veri dışa aktarma state'leri
+  const [exportFormat, setExportFormat] = useState<"json" | "txt">("json");
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Hesap silme state'leri
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const router = useRouter();
 
   // Bileşen yüklendiğinde kullanıcının kendi verilerini çekiyoruz
   useEffect(() => {
     const fetchUserData = async () => {
-      try {
-        // Not: Backend'de bu rotaları birazdan yazacağız/düzenleyeceğiz
-        // Promise.all ile iki isteği aynı anda paralel atıyoruz
-        const [userRes, sessionsRes] = await Promise.all([
-          api.get("/users/me"), // Kimlik kartına (Token) göre kullanıcı bilgilerini getir
-          api.get("/chat/sessions") // Sadece bu kullanıcıya ait geçmiş sohbetleri getir
-        ]);
+      setLoadingData(true);
+      setSessionsError(null);
 
+      // Kullanıcı bilgisini çek
+      try {
+        const userRes = await api.get("/auth/me");
         setCurrentUser(userRes.data);
+      } catch (error) {
+        console.error("Kullanıcı bilgisi alınamadı:", error);
+      }
+
+      // Sohbet oturumlarını çek (hata ayrı yönetilir)
+      try {
+        const sessionsRes = await api.get("/chat/sessions");
         setChatSessions(sessionsRes.data);
       } catch (error) {
-        console.error("Veri senkronizasyon hatası:", error);
+        console.error("Sohbet geçmişi yükleme hatası:", error);
+        setSessionsError("Sohbet geçmişi yüklenemedi");
       } finally {
         setLoadingData(false);
       }
     };
 
     fetchUserData();
+  }, [sessionRefreshKey]);
+
+  // Yeni oturum oluşturulduğunda sidebar'ı yenilemek için window event dinle
+  useEffect(() => {
+    const handleSessionCreated = () => {
+      setSessionRefreshKey((prev) => prev + 1);
+    };
+    window.addEventListener("lunia:session-created", handleSessionCreated);
+    return () => {
+      window.removeEventListener("lunia:session-created", handleSessionCreated);
+    };
   }, []);
+
+  // Modal açıldığında taze kullanıcı verisi çek; kapandığında state'leri sıfırla
+  useEffect(() => {
+    if (isSettingsOpen) {
+      const fetchModalUser = async () => {
+        setIsModalLoading(true);
+        setModalError(null);
+        setModalUser(null);
+        try {
+          const res = await api.get("/auth/me");
+          setModalUser(res.data);
+        } catch (error) {
+          console.error("Modal kullanıcı bilgisi alınamadı:", error);
+          setModalError("Hesap bilgileri yüklenemedi");
+        } finally {
+          setIsModalLoading(false);
+        }
+      };
+      fetchModalUser();
+    } else {
+      // Modal kapandığında state'leri sıfırla
+      setModalUser(null);
+      setIsModalLoading(false);
+      setModalError(null);
+    }
+  }, [isSettingsOpen]);
+
+  // Oturum silme handler'ı
+  const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
+    e.stopPropagation(); // Oturum seçme handler'ının tetiklenmesini engelle
+    if (deletingSessionId) return; // Zaten silme işlemi varsa bekle
+
+    setDeletingSessionId(sessionId);
+    try {
+      await api.delete(`/chat/sessions/${sessionId}`);
+      // Listeden kaldır
+      setChatSessions((prev) => prev.filter((s) => s.id !== sessionId));
+
+      // Silinen oturum aktif oturumsa boş sohbet ekranına yönlendir
+      const currentUrl = window.location.search;
+      const params = new URLSearchParams(currentUrl);
+      if (params.get("session") === sessionId) {
+        router.push("/chat");
+      }
+    } catch (error) {
+      console.error("Oturum silme hatası:", error);
+    } finally {
+      setDeletingSessionId(null);
+    }
+  };
 
   const handleLogout = () => {
     Cookies.remove("token");
     window.location.href = "/login";
+  };
+
+  // Veri dışa aktarma handler'ı
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const response = await api.get(`/chat/export?format=${exportFormat}`, {
+        responseType: "blob",
+      });
+      const url = URL.createObjectURL(response.data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = exportFormat === "json" ? "lunia-export.json" : "lunia-export.txt";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Dışa aktarma hatası:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Hesap silme handler'ı
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await api.delete("/auth/account", { data: { password: deletePassword } });
+      Cookies.remove("token");
+      router.push("/login");
+    } catch {
+      setDeleteError("Şifre hatalı veya bir hata oluştu.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Sidebar'ı yenilemek için dışarıdan çağrılabilir fonksiyon (window event ile)
+  const refreshSessions = () => {
+    setSessionRefreshKey((prev) => prev + 1);
   };
 
   return (
@@ -83,18 +223,34 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="space-y-1">
               {loadingData ? (
                 <div className="px-3 text-sm text-lunia-muted animate-pulse">Kayıtlar aranıyor...</div>
+              ) : sessionsError ? (
+                <div className="px-3 text-sm text-red-400 opacity-80">{sessionsError}</div>
               ) : chatSessions.length === 0 ? (
                 <div className="px-3 text-sm text-lunia-muted opacity-50">Henüz bir sohbet geçmişi yok.</div>
               ) : (
                 chatSessions.map((session) => (
-                  <div key={session.id} className="group flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-lunia-border/50 cursor-pointer text-sm text-lunia-muted hover:text-lunia-text transition-all">
+                  <div
+                    key={session.id}
+                    onClick={() => router.push(`/chat?session=${session.id}`)}
+                    className="group flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-lunia-border/50 cursor-pointer text-sm text-lunia-muted hover:text-lunia-text transition-all"
+                  >
                     <div className="flex items-center gap-3 overflow-hidden">
                       <MessageSquare size={16} className="shrink-0" />
                       <span className="truncate">{session.title}</span>
                     </div>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                       <button className="p-1 hover:text-lunia-accent transition-colors"><Edit2 size={14} /></button>
-                      <button className="p-1 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                      <button
+                        onClick={(e) => handleDeleteSession(e, session.id)}
+                        disabled={deletingSessionId === session.id}
+                        className="p-1 hover:text-red-400 transition-colors disabled:opacity-50"
+                      >
+                        {deletingSessionId === session.id ? (
+                          <span className="block w-3.5 h-3.5 border-2 border-red-400/50 border-t-red-400 rounded-full animate-spin" />
+                        ) : (
+                          <Trash2 size={14} />
+                        )}
+                      </button>
                     </div>
                   </div>
                 ))
@@ -143,9 +299,37 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               
               {/* Hesap Bilgileri */}
               <div className="bg-[#18181b] p-4 rounded-xl border border-lunia-border">
-                <p className="text-sm text-lunia-muted font-semibold mb-1">Hesap Sahibi</p>
-                <p className="text-white font-medium">{currentUser?.full_name || "Yükleniyor..."}</p>
-                <p className="text-xs text-lunia-muted">{currentUser?.email || "Yükleniyor..."}</p>
+                <p className="text-sm text-lunia-muted font-semibold mb-3">Hesap Bilgileri</p>
+                
+                {/* Yükleme durumu */}
+                {isModalLoading && (
+                  <div className="flex items-center justify-center py-4">
+                    <span className="block w-6 h-6 border-2 border-lunia-accent/30 border-t-lunia-accent rounded-full animate-spin" />
+                  </div>
+                )}
+
+                {/* Hata durumu */}
+                {!isModalLoading && modalError && (
+                  <p className="text-sm text-red-400">{modalError}</p>
+                )}
+
+                {/* Başarılı yükleme */}
+                {!isModalLoading && !modalError && modalUser && (
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-xs text-lunia-muted">İsim</p>
+                      <p className="text-white font-medium">{modalUser.full_name || "İsimsiz Kullanıcı"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-lunia-muted">E-posta</p>
+                      <p className="text-white font-medium">{modalUser.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-lunia-muted">Yetki Seviyesi</p>
+                      <p className="text-white font-medium">{getRoleLabel(modalUser.role_level)}</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -158,11 +342,108 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
               <div className="pt-4 border-t border-lunia-border space-y-3">
                 <p className="text-sm text-lunia-muted font-semibold mb-2">Veri Yönetimi</p>
-                <button className="w-full flex items-center justify-between px-4 py-2.5 bg-[#18181b] border border-lunia-border hover:border-lunia-accent rounded-lg text-sm transition-colors text-lunia-text">
-                  <span className="flex items-center gap-2"><Download size={16} /> Verilerimi Talep Et</span>
-                </button>
-                <button className="w-full flex items-center justify-between px-4 py-2.5 bg-red-900/10 border border-red-900/30 hover:bg-red-900/20 text-red-400 rounded-lg text-sm transition-colors">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleExport}
+                    disabled={isExporting}
+                    className="flex-1 flex items-center justify-between px-4 py-2.5 bg-[#18181b] border border-lunia-border hover:border-lunia-accent rounded-lg text-sm transition-colors text-lunia-text disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="flex items-center gap-2">
+                      {isExporting ? (
+                        <span className="block w-4 h-4 border-2 border-lunia-accent/30 border-t-lunia-accent rounded-full animate-spin" />
+                      ) : (
+                        <Download size={16} />
+                      )}
+                      {isExporting ? "İndiriliyor..." : "Verilerimi İndir"}
+                    </span>
+                  </button>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => setExportFormat("json")}
+                      className={`px-2.5 py-2 rounded-lg text-xs font-medium border transition-colors ${
+                        exportFormat === "json"
+                          ? "bg-lunia-accent/20 border-lunia-accent text-lunia-accent"
+                          : "bg-[#18181b] border-lunia-border text-lunia-muted hover:border-lunia-accent"
+                      }`}
+                    >
+                      JSON
+                    </button>
+                    <button
+                      onClick={() => setExportFormat("txt")}
+                      className={`px-2.5 py-2 rounded-lg text-xs font-medium border transition-colors ${
+                        exportFormat === "txt"
+                          ? "bg-lunia-accent/20 border-lunia-accent text-lunia-accent"
+                          : "bg-[#18181b] border-lunia-border text-lunia-muted hover:border-lunia-accent"
+                      }`}
+                    >
+                      TXT
+                    </button>
+                  </div>
+                </div>
+                <button className="w-full flex items-center justify-between px-4 py-2.5 bg-red-900/10 border border-red-900/30 hover:bg-red-900/20 text-red-400 rounded-lg text-sm transition-colors" onClick={() => setIsDeleteModalOpen(true)}>
                   <span className="flex items-center gap-2"><AlertTriangle size={16} /> Tüm Verilerimi Sil</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* HESAP SİLME ONAY MODALI */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0f0f13] border border-red-900/40 w-full max-w-md rounded-2xl p-6 shadow-2xl">
+            <div className="flex flex-col items-center text-center mb-6">
+              <div className="w-14 h-14 rounded-full bg-red-900/20 flex items-center justify-center mb-4">
+                <AlertTriangle size={28} className="text-red-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Hesabı Kalıcı Olarak Sil</h3>
+              <p className="text-sm text-red-400 font-semibold mb-1">Bu işlem geri alınamaz.</p>
+              <p className="text-sm text-lunia-muted">
+                Tüm sohbet geçmişiniz ve hesap bilgileriniz kalıcı olarak silinecektir.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-lunia-muted block mb-1.5">Onaylamak için şifrenizi girin</label>
+                <input
+                  type="password"
+                  placeholder="Şifrenizi girin"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  className="w-full bg-[#18181b] border border-lunia-border focus:border-red-500 text-white rounded-lg px-3 py-2.5 text-sm outline-none transition-colors"
+                />
+              </div>
+
+              {deleteError && (
+                <p className="text-sm text-red-400">{deleteError}</p>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setIsDeleteModalOpen(false);
+                    setDeletePassword("");
+                    setDeleteError(null);
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-[#18181b] border border-lunia-border hover:border-lunia-accent text-lunia-muted hover:text-lunia-text rounded-lg text-sm transition-colors"
+                >
+                  İptal
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={isDeleting || !deletePassword}
+                  className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  {isDeleting ? (
+                    <>
+                      <span className="block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Siliniyor...
+                    </>
+                  ) : (
+                    "Hesabı Sil"
+                  )}
                 </button>
               </div>
             </div>
@@ -179,7 +460,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
           )}
         </header>
-        {children}
+        <ErrorBoundary>{children}</ErrorBoundary>
       </main>
 
     </div>
