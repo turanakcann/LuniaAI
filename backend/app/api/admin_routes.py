@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List
 from datetime import datetime
 import os
@@ -10,7 +10,8 @@ import logging
 
 from app.models.database import get_db
 from app.models.user import User
-from app.models.chat import ChatSession, ChatMessage
+# BÜYÜK YILDIZ: SystemLog tablosunu import'a ekledik
+from app.models.chat import ChatSession, ChatMessage, SystemLog 
 from app.api.deps import get_current_user, check_admin_level
 from app.models.schemas import MetricsOut, AdminUserOut, ActivityEventOut
 
@@ -18,10 +19,12 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+class UpdateRoleRequest(BaseModel):
+    user_id: int
+    new_role_level: int = Field(..., ge=1, le=5)
 
 class BanUserRequest(BaseModel):
     user_id: int
-
 
 def require_superadmin(current_user: User):
     """role_level >= 5 kontrolü; yetersiz yetki için 403 fırlatır."""
@@ -31,6 +34,27 @@ def require_superadmin(current_user: User):
             detail="Bu işlem için SuperAdmin (Seviye 5) yetkisi gereklidir."
         )
 
+# YOL DÜZELTİLDİ: Frontend /admin/update-role bekliyordu
+@router.post("/admin/update-role", status_code=200)
+async def update_user_role(
+    role_data: UpdateRoleRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # İstekte bulunan kişinin cidden SuperAdmin (5) olup olmadığını doğrula
+    require_superadmin(current_user)
+        
+    target_user = db.query(User).filter(User.id == role_data.user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+        
+    target_user.role_level = role_data.new_role_level
+    # Eğer seviye 4 veya 5 ise otomatik is_admin bayrağını kaldır/ekle
+    target_user.is_admin = True if role_data.new_role_level >= 4 else False
+    
+    db.commit()
+    logger.info(f"Role Update: Kullanıcı {target_user.email} yetkisi {current_user.email} tarafından {role_data.new_role_level} yapıldı.")
+    return {"detail": f"Kullanıcı yetki seviyesi başarıyla {role_data.new_role_level} olarak güncellendi."}
 
 # --- SİLME (SuperAdmin only) ---
 @router.delete("/admin/delete-user/{user_id}")
@@ -125,52 +149,32 @@ async def unban_user(
     return {"message": f"Kullanıcı {request.user_id} aktif edildi."}
 
 
-# --- AKTİVİTE AKIŞI (SuperAdmin only) ---
+# --- AKTİVİTE AKIŞI VE GÜVENLİK LOGLARI (SuperAdmin only) ---
 @router.get("/admin/activity-feed", response_model=List[ActivityEventOut])
 async def get_activity_feed(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
+    """
+    Sistem loglarını veritabanından okur. Kullanıcı e-postalarını birleştirerek döner.
+    """
     require_superadmin(current_user)
-
-    log_file = "lunia_backend.log"
     events: List[ActivityEventOut] = []
 
-    if not os.path.exists(log_file):
-        return []
-
     try:
-        with open(log_file, "r", encoding="utf-8") as f:
-            lines = f.readlines()
+        # SystemLog ve User tablosunu birleştiriyoruz ki ihlali yapanın mailini görebilelim
+        logs = db.query(SystemLog, User.email).outerjoin(User, SystemLog.user_id == User.id)\
+                 .order_by(SystemLog.created_at.desc()).limit(100).all()
 
-        for line in lines[-100:]:
-            line = line.strip()
-            if not line:
-                continue
-
-            # Log formatı: "2024-01-01 12:00:00,000 - name - LEVEL - message"
-            parts = line.split(" - ", 3)
-            if len(parts) < 4:
-                continue
-
-            timestamp = parts[0].strip()
-            level = parts[2].strip()
-            event = parts[3].strip()
-
-            # Varsa e-posta adresini kullanıcı olarak çıkar
-            user = None
-            match = re.search(r'[\w.+-]+@[\w-]+\.[\w.]+', event)
-            if match:
-                user = match.group(0)
-
+        for log, user_email in logs:
             events.append(ActivityEventOut(
-                timestamp=timestamp,
-                level=level,
-                event=event,
-                user=user
+                timestamp=log.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                level=log.log_type,  # Örn: SECURITY_ALERT
+                event=log.details,
+                user=user_email or "Silinmiş Kullanıcı"
             ))
 
-        events.reverse()  # En yeni olaylar önce
     except Exception as e:
-        logger.error(f"Activity feed okuma hatası: {e}")
+        logger.error(f"Activity feed veritabanından çekilirken hata oluştu: {e}")
 
     return events

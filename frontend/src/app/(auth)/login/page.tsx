@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Cookies from "js-cookie";
@@ -13,6 +13,12 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Sayfa yüklendiğinde temayı localStorage'dan çekip uygula
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("lunia-theme") || "zen";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,10 +35,7 @@ export default function Login() {
       });
 
       const { access_token } = response.data;
-      // Güvenli çerez politikası
       Cookies.set("token", access_token, { expires: 1, secure: true, sameSite: "strict" });
-
-      // Doğrudan ana ekrana yönlendir
       router.replace("/chat");
     } catch (err: any) {
       setError(err.response?.data?.detail || "Bağlantı hatası. Sistem çevrimdışı olabilir.");
@@ -42,12 +45,13 @@ export default function Login() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-lunia-bg p-4 relative font-sans overflow-hidden">
+    <main className="flex min-h-screen items-center justify-center bg-lunia-bg p-4 relative font-sans overflow-hidden transition-colors duration-300">
       
       {/* Arka Plan Hafif Işık Efekti */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-lunia-accent/5 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-lunia-accent/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-      <div className="w-full max-w-md border border-lunia-border bg-[#0f0f13]/60 backdrop-blur-md p-8 rounded-2xl shadow-2xl z-10 relative">
+      {/* bg-[#0f0f13] YERİNE bg-lunia-card KULLANILDI */}
+      <div className="w-full max-w-md border border-lunia-border bg-lunia-card/80 backdrop-blur-md p-8 rounded-2xl shadow-2xl z-10 relative transition-colors duration-300">
         
         <div className="mb-8 text-center">
           <div className="w-12 h-12 rounded-2xl bg-lunia-accent/10 flex items-center justify-center border border-lunia-accent/20 mx-auto mb-4">
@@ -62,13 +66,14 @@ export default function Login() {
             <label className="block text-lunia-text text-xs font-semibold mb-2 uppercase tracking-wider opacity-80">
               E-Posta Adresi
             </label>
+            {/* bg-[#111115] YERİNE bg-lunia-bg KULLANILDI */}
             <input
               type="email"
               required
-              className="w-full bg-[#111115] border border-lunia-border text-lunia-text px-4 py-3 rounded-xl focus:outline-none focus:border-lunia-accent focus:ring-1 focus:ring-lunia-accent transition-all placeholder:text-lunia-muted/40 text-sm"
+              className="w-full bg-lunia-bg border border-lunia-border text-lunia-text px-4 py-3 rounded-xl focus:outline-none focus:border-lunia-accent focus:ring-1 focus:ring-lunia-accent transition-all placeholder:text-lunia-muted/40 text-sm"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="example@domain.com"
+              placeholder="isim@domain.com"
             />
           </div>
 
@@ -84,7 +89,7 @@ export default function Login() {
             <input
               type="password"
               required
-              className="w-full bg-[#111115] border border-lunia-border text-lunia-text px-4 py-3 rounded-xl focus:outline-none focus:border-lunia-accent focus:ring-1 focus:ring-lunia-accent transition-all placeholder:text-lunia-muted/40 text-sm"
+              className="w-full bg-lunia-bg border border-lunia-border text-lunia-text px-4 py-3 rounded-xl focus:outline-none focus:border-lunia-accent focus:ring-1 focus:ring-lunia-accent transition-all placeholder:text-lunia-muted/40 text-sm"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
@@ -92,7 +97,7 @@ export default function Login() {
           </div>
 
           {error && (
-            <div className="bg-red-900/10 border border-red-500/30 text-red-400 p-3.5 rounded-xl text-xs leading-relaxed">
+            <div className="bg-red-900/10 border border-red-500/30 text-red-500 p-3.5 rounded-xl text-xs leading-relaxed font-medium">
               {error}
             </div>
           )}
@@ -100,7 +105,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-lunia-accent hover:bg-lunia-accentHover text-white font-medium py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-lunia-accent/10 disabled:opacity-50 text-sm mt-2"
+            className="w-full bg-lunia-accent hover:bg-lunia-accent-hover text-black font-medium py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-lunia-accent/10 disabled:opacity-50 text-sm mt-2"
           >
             {loading ? "Doğrulanıyor..." : "Giriş Yap"}
             {!loading && <ArrowRight size={16} />}

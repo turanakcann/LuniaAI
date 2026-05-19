@@ -32,7 +32,7 @@ export default function ForgotPassword() {
       
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-lunia-accent/5 rounded-full blur-[120px] pointer-events-none"></div>
 
-      <div className="w-full max-w-md border border-lunia-border bg-[#0f0f13]/60 backdrop-blur-md p-8 rounded-2xl shadow-2xl z-10 relative">
+      <div className="w-full max-w-md border border-lunia-border bg-lunia-card/80 backdrop-blur-md p-8 rounded-2xl shadow-2xl z-10 relative">
         
         <div className="mb-8 text-center">
           <div className="w-12 h-12 rounded-2xl bg-lunia-accent/10 flex items-center justify-center border border-lunia-accent/20 mx-auto mb-4">
@@ -64,7 +64,7 @@ export default function ForgotPassword() {
               <input
                 type="email"
                 required
-                className="w-full bg-[#111115] border border-lunia-border text-lunia-text px-4 py-3 rounded-xl focus:outline-none focus:border-lunia-accent focus:ring-1 focus:ring-lunia-accent transition-all placeholder:text-lunia-muted/40 text-sm"
+                className="w-full bg-lunia-bg border border-lunia-border text-lunia-text px-4 py-3 rounded-xl focus:outline-none focus:border-lunia-accent focus:ring-1 focus:ring-lunia-accent transition-all placeholder:text-lunia-muted/40 text-sm"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="isim@domain.com"
@@ -80,7 +80,7 @@ export default function ForgotPassword() {
             <button
               type="submit"
               disabled={loading || !email}
-              className="w-full bg-lunia-accent hover:bg-lunia-accentHover text-white font-medium py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-lunia-accent/10 disabled:opacity-50 text-sm mt-2"
+              className="w-full bg-lunia-accent hover:bg-lunia-accentHover text-black font-medium py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-lunia-accent/10 disabled:opacity-50 text-sm mt-2"
             >
               {loading ? "Gönderiliyor..." : "Bağlantı Gönder"}
               {!loading && <Send size={16} />}

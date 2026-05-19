@@ -10,12 +10,12 @@ export default function AdminPage() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-lunia-bg text-lunia-text">
+    <div className="min-h-screen bg-lunia-bg text-lunia-text transition-colors duration-300">
       {/* Üst Bar */}
-      <header className="border-b border-lunia-border bg-lunia-sidebar px-6 py-4 flex items-center gap-4">
+      <header className="border-b border-lunia-border bg-lunia-sidebar px-6 py-4 flex items-center gap-4 transition-colors duration-300">
         <button
           onClick={() => router.push("/chat")}
-          className="p-2 rounded-xl text-lunia-muted hover:text-lunia-text hover:bg-lunia-border/50 transition-colors"
+          className="p-2 rounded-xl text-lunia-muted hover:text-lunia-text hover:bg-lunia-border transition-colors"
         >
           <ArrowLeft size={18} />
         </button>
@@ -39,7 +39,7 @@ export default function AdminPage() {
         {/* Kullanıcı Yönetimi */}
         <section>
           <h2 className="text-sm font-semibold text-lunia-muted uppercase tracking-wider mb-4">
-            Kullanıcı Yönetimi
+            Erişim ve Yetki Yönetimi
           </h2>
           <UserDataGrid />
         </section>
@@ -47,7 +47,7 @@ export default function AdminPage() {
         {/* Aktivite Akışı */}
         <section>
           <h2 className="text-sm font-semibold text-lunia-muted uppercase tracking-wider mb-4">
-            Sistem Aktivite Akışı
+            Güvenlik Logları ve Aktivite Akışı
           </h2>
           <ActivityFeed />
         </section>

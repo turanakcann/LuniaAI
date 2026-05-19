@@ -29,3 +29,12 @@ class ChatMessage(Base):
     created_at = Column(DateTime, default=get_utc_now)
 
     session = relationship("ChatSession", back_populates="messages")
+
+class SystemLog(Base):
+    __tablename__ = "system_logs"
+    
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    log_type = Column(String, default="SECURITY_ALERT")
+    details = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=get_utc_now)

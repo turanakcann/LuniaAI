@@ -3,11 +3,10 @@
 import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
-import api from "@/src/lib/api"; // Görece yol kullanıyorsan: "../../../../lib/api"
+import api from "@/src/lib/api"; 
 import { MessageSquare, Plus, Menu, X, LogOut, Settings, Trash2, Edit2, Download, AlertTriangle } from "lucide-react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-// Gelecek backend verileri için tip tanımlamaları
 type ChatSession = {
   id: string;
   title: string;
@@ -20,7 +19,6 @@ type UserProfile = {
   role_level: number;
 };
 
-// role_level sayısal değerini okunabilir etikete çevirir
 function getRoleLabel(roleLevel: number): string {
   switch (roleLevel) {
     case 1: return "Kullanıcı";
@@ -42,7 +40,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [loadingData, setLoadingData] = useState(true);
   const [sessionsError, setSessionsError] = useState<string | null>(null);
   const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
-  // sessionRefreshKey artırıldığında useEffect sessions'ı yeniden çeker
   const [sessionRefreshKey, setSessionRefreshKey] = useState(0);
 
   // Modal için bağımsız state'ler
@@ -60,6 +57,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  // Tema state'i (Yeni Eklendi)
+  const [theme, setTheme] = useState("zen");
+
   const router = useRouter();
 
   // Bileşen yüklendiğinde kullanıcının kendi verilerini çekiyoruz
@@ -68,7 +68,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setLoadingData(true);
       setSessionsError(null);
 
-      // Kullanıcı bilgisini çek
       try {
         const userRes = await api.get("/auth/me");
         setCurrentUser(userRes.data);
@@ -76,7 +75,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         console.error("Kullanıcı bilgisi alınamadı:", error);
       }
 
-      // Sohbet oturumlarını çek (hata ayrı yönetilir)
       try {
         const sessionsRes = await api.get("/chat/sessions");
         setChatSessions(sessionsRes.data);
@@ -102,6 +100,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     };
   }, []);
 
+  // Temayı LocalStorage'dan Çekme ve Uygulama
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("lunia-theme") || "zen";
+    setTheme(savedTheme);
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }, []);
+
   // Modal açıldığında taze kullanıcı verisi çek; kapandığında state'leri sıfırla
   useEffect(() => {
     if (isSettingsOpen) {
@@ -121,25 +126,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       };
       fetchModalUser();
     } else {
-      // Modal kapandığında state'leri sıfırla
       setModalUser(null);
       setIsModalLoading(false);
       setModalError(null);
     }
   }, [isSettingsOpen]);
 
-  // Oturum silme handler'ı
+  // Tema Değiştirme Fonksiyonu
+  const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newTheme = e.target.value;
+    setTheme(newTheme);
+    localStorage.setItem("lunia-theme", newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+  };
+
   const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
-    e.stopPropagation(); // Oturum seçme handler'ının tetiklenmesini engelle
-    if (deletingSessionId) return; // Zaten silme işlemi varsa bekle
+    e.stopPropagation();
+    if (deletingSessionId) return;
 
     setDeletingSessionId(sessionId);
     try {
       await api.delete(`/chat/sessions/${sessionId}`);
-      // Listeden kaldır
       setChatSessions((prev) => prev.filter((s) => s.id !== sessionId));
 
-      // Silinen oturum aktif oturumsa boş sohbet ekranına yönlendir
       const currentUrl = window.location.search;
       const params = new URLSearchParams(currentUrl);
       if (params.get("session") === sessionId) {
@@ -157,7 +166,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     window.location.href = "/login";
   };
 
-  // Veri dışa aktarma handler'ı
   const handleExport = async () => {
     setIsExporting(true);
     try {
@@ -179,7 +187,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   };
 
-  // Hesap silme handler'ı
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
     setDeleteError(null);
@@ -194,19 +201,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   };
 
-  // Sidebar'ı yenilemek için dışarıdan çağrılabilir fonksiyon (window event ile)
-  const refreshSessions = () => {
-    setSessionRefreshKey((prev) => prev + 1);
-  };
-
   return (
     <div className="flex h-screen bg-lunia-bg text-lunia-text font-sans overflow-hidden">
       
-      {/* SOL PANEL (SIDEBAR) */}
       <aside className={`${isSidebarOpen ? "w-72" : "w-0 -translate-x-full"} transition-all duration-300 ease-in-out shrink-0 bg-lunia-sidebar border-r border-lunia-border flex flex-col justify-between absolute md:relative z-20 h-full`}>
         <div className="p-4 flex flex-col h-full overflow-hidden">
           <div className="flex items-center justify-between mb-6 shrink-0">
-            <h2 className="text-xl font-bold tracking-wider text-lunia-text">Lunia.ai</h2>
+            <button 
+              onClick={() => window.location.href = "/chat"} 
+              className="text-xl font-bold tracking-wider text-lunia-text hover:text-lunia-accent transition-colors"
+            >
+              Lunia.ai
+            </button>
             <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-lunia-muted hover:text-white">
               <X size={20} />
             </button>
@@ -259,12 +265,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
 
-        {/* ALT MENÜ */}
         <div className="p-4 border-t border-lunia-border space-y-1 bg-lunia-sidebar shrink-0">
-          
-          {/* Dinamik Kullanıcı Bilgisi */}
           {!loadingData && currentUser && (
-            <div className="mb-3 px-3 py-2 bg-[#111115] rounded-xl border border-lunia-border flex items-center gap-3">
+            <div className="mb-3 px-3 py-2 bg-lunia-card rounded-xl border border-lunia-border flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-lunia-accent/20 flex items-center justify-center text-lunia-accent font-bold">
                 {currentUser.full_name.charAt(0).toUpperCase()}
               </div>
@@ -286,57 +289,56 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* AYARLAR MODALI */}
       {isSettingsOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0f0f13] border border-lunia-border w-full max-w-md rounded-2xl p-6 shadow-2xl">
+          <div className="bg-lunia-card border border-lunia-border w-full max-w-md rounded-2xl p-6 shadow-2xl transition-colors duration-300">
             <div className="flex justify-between items-center mb-6 border-b border-lunia-border pb-4">
-              <h3 className="text-xl font-bold text-white">Sistem Ayarları</h3>
-              <button onClick={() => setIsSettingsOpen(false)} className="text-lunia-muted hover:text-white"><X size={20} /></button>
+              <h3 className="text-xl font-bold text-lunia-text">Sistem Ayarları</h3>
+              <button onClick={() => setIsSettingsOpen(false)} className="text-lunia-muted hover:text-lunia-text transition-colors"><X size={20} /></button>
             </div>
             
             <div className="space-y-6">
-              
-              {/* Hesap Bilgileri */}
-              <div className="bg-[#18181b] p-4 rounded-xl border border-lunia-border">
+              {/* Hesap Bilgileri Kartı (bg-[#18181b] yerine bg-lunia-bg) */}
+              <div className="bg-lunia-bg p-4 rounded-xl border border-lunia-border transition-colors duration-300">
                 <p className="text-sm text-lunia-muted font-semibold mb-3">Hesap Bilgileri</p>
-                
-                {/* Yükleme durumu */}
                 {isModalLoading && (
                   <div className="flex items-center justify-center py-4">
                     <span className="block w-6 h-6 border-2 border-lunia-accent/30 border-t-lunia-accent rounded-full animate-spin" />
                   </div>
                 )}
-
-                {/* Hata durumu */}
                 {!isModalLoading && modalError && (
-                  <p className="text-sm text-red-400">{modalError}</p>
+                  <p className="text-sm text-red-500">{modalError}</p>
                 )}
-
-                {/* Başarılı yükleme */}
                 {!isModalLoading && !modalError && modalUser && (
                   <div className="space-y-2">
                     <div>
                       <p className="text-xs text-lunia-muted">İsim</p>
-                      <p className="text-white font-medium">{modalUser.full_name || "İsimsiz Kullanıcı"}</p>
+                      {/* text-white yerine text-lunia-text */}
+                      <p className="text-lunia-text font-medium">{modalUser.full_name || "İsimsiz Kullanıcı"}</p>
                     </div>
                     <div>
                       <p className="text-xs text-lunia-muted">E-posta</p>
-                      <p className="text-white font-medium">{modalUser.email}</p>
+                      <p className="text-lunia-text font-medium">{modalUser.email}</p>
                     </div>
                     <div>
                       <p className="text-xs text-lunia-muted">Yetki Seviyesi</p>
-                      <p className="text-white font-medium">{getRoleLabel(modalUser.role_level)}</p>
+                      <p className="text-lunia-text font-medium">{getRoleLabel(modalUser.role_level)}</p>
                     </div>
                   </div>
                 )}
               </div>
 
               <div>
-                <label className="text-sm text-lunia-muted font-semibold block mb-2">Tema Seçimi (Yakında)</label>
-                <select disabled className="w-full bg-[#18181b] border border-lunia-border text-lunia-text rounded-lg px-3 py-2 opacity-50">
-                  <option>Derin İndigo (Aktif)</option>
-                  <option>Aydınlık Mod</option>
+                <label className="text-sm text-lunia-muted font-semibold block mb-2">Tema Seçimi</label>
+                <select 
+                  value={theme}
+                  onChange={handleThemeChange}
+                  className="w-full bg-lunia-bg border border-lunia-border text-lunia-text rounded-lg px-3 py-2 outline-none focus:border-lunia-accent transition-colors duration-300"
+                >
+                  <option value="dark">🌙 Dark (Karanlık)</option>
+                  <option value="light">☀️ Light (Aydınlık)</option>
+                  <option value="natural">🌿 Natural (Doğal)</option>
+                  <option value="soft">☕ Soft (Yumuşak Krem)</option>
                 </select>
               </div>
 
@@ -346,7 +348,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <button
                     onClick={handleExport}
                     disabled={isExporting}
-                    className="flex-1 flex items-center justify-between px-4 py-2.5 bg-[#18181b] border border-lunia-border hover:border-lunia-accent rounded-lg text-sm transition-colors text-lunia-text disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 flex items-center justify-between px-4 py-2.5 bg-lunia-bg border border-lunia-border hover:border-lunia-accent rounded-lg text-sm transition-colors text-lunia-text disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="flex items-center gap-2">
                       {isExporting ? (
@@ -363,7 +365,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       className={`px-2.5 py-2 rounded-lg text-xs font-medium border transition-colors ${
                         exportFormat === "json"
                           ? "bg-lunia-accent/20 border-lunia-accent text-lunia-accent"
-                          : "bg-[#18181b] border-lunia-border text-lunia-muted hover:border-lunia-accent"
+                          : "bg-lunia-bg border-lunia-border text-lunia-muted hover:border-lunia-accent"
                       }`}
                     >
                       JSON
@@ -373,14 +375,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       className={`px-2.5 py-2 rounded-lg text-xs font-medium border transition-colors ${
                         exportFormat === "txt"
                           ? "bg-lunia-accent/20 border-lunia-accent text-lunia-accent"
-                          : "bg-[#18181b] border-lunia-border text-lunia-muted hover:border-lunia-accent"
+                          : "bg-lunia-bg border-lunia-border text-lunia-muted hover:border-lunia-accent"
                       }`}
                     >
                       TXT
                     </button>
                   </div>
                 </div>
-                <button className="w-full flex items-center justify-between px-4 py-2.5 bg-red-900/10 border border-red-900/30 hover:bg-red-900/20 text-red-400 rounded-lg text-sm transition-colors" onClick={() => setIsDeleteModalOpen(true)}>
+                <button className="w-full flex items-center justify-between px-4 py-2.5 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-500 rounded-lg text-sm transition-colors" onClick={() => setIsDeleteModalOpen(true)}>
                   <span className="flex items-center gap-2"><AlertTriangle size={16} /> Tüm Verilerimi Sil</span>
                 </button>
               </div>
@@ -389,16 +391,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       )}
 
-      {/* HESAP SİLME ONAY MODALI */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0f0f13] border border-red-900/40 w-full max-w-md rounded-2xl p-6 shadow-2xl">
+          <div className="bg-lunia-card border border-red-500/40 w-full max-w-md rounded-2xl p-6 shadow-2xl transition-colors duration-300">
             <div className="flex flex-col items-center text-center mb-6">
-              <div className="w-14 h-14 rounded-full bg-red-900/20 flex items-center justify-center mb-4">
-                <AlertTriangle size={28} className="text-red-400" />
+              <div className="w-14 h-14 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
+                <AlertTriangle size={28} className="text-red-500" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Hesabı Kalıcı Olarak Sil</h3>
-              <p className="text-sm text-red-400 font-semibold mb-1">Bu işlem geri alınamaz.</p>
+              <h3 className="text-xl font-bold text-lunia-text mb-2">Hesabı Kalıcı Olarak Sil</h3>
+              <p className="text-sm text-red-500 font-semibold mb-1">Bu işlem geri alınamaz.</p>
               <p className="text-sm text-lunia-muted">
                 Tüm sohbet geçmişiniz ve hesap bilgileriniz kalıcı olarak silinecektir.
               </p>
@@ -412,12 +413,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   placeholder="Şifrenizi girin"
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}
-                  className="w-full bg-[#18181b] border border-lunia-border focus:border-red-500 text-white rounded-lg px-3 py-2.5 text-sm outline-none transition-colors"
+                  className="w-full bg-lunia-bg border border-lunia-border focus:border-red-500 text-lunia-text rounded-lg px-3 py-2.5 text-sm outline-none transition-colors"
                 />
               </div>
 
               {deleteError && (
-                <p className="text-sm text-red-400">{deleteError}</p>
+                <p className="text-sm text-red-500">{deleteError}</p>
               )}
 
               <div className="flex gap-3 pt-2">
@@ -427,14 +428,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     setDeletePassword("");
                     setDeleteError(null);
                   }}
-                  className="flex-1 px-4 py-2.5 bg-[#18181b] border border-lunia-border hover:border-lunia-accent text-lunia-muted hover:text-lunia-text rounded-lg text-sm transition-colors"
+                  className="flex-1 px-4 py-2.5 bg-lunia-bg border border-lunia-border hover:border-lunia-accent text-lunia-muted hover:text-lunia-text rounded-lg text-sm transition-colors"
                 >
                   İptal
                 </button>
                 <button
                   onClick={handleDeleteAccount}
                   disabled={isDeleting || !deletePassword}
-                  className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-[#ffffff] rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2"
                 >
                   {isDeleting ? (
                     <>
@@ -451,7 +452,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       )}
 
-      {/* ANA İÇERİK */}
       <main className="flex-1 flex flex-col relative w-full">
         <header className="p-4 absolute top-0 left-0 z-10">
           {!isSidebarOpen && (

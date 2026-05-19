@@ -3,29 +3,62 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root, .dark {
-  --background: 125 28% 14%;
-  --foreground: 60 92% 95%;
-  --card: 124 36% 23%;
-  --card-foreground: 60 92% 95%;
-  --popover: 125 28% 14%;
-  --popover-foreground: 60 92% 95%;
-  --primary: 13 100% 86%;
-  --primary-foreground: 125 28% 14%;
-  --secondary: 16 100% 61%;
-  --secondary-foreground: 60 92% 95%;
-  --muted: 124 20% 25%;
-  --muted-foreground: 60 20% 80%;
-  --accent: 13 100% 86%;
-  --accent-foreground: 125 28% 14%;
-  --destructive: 16 100% 61%;
-  --destructive-foreground: 60 92% 95%;
-  --border: 124 30% 30%;
-  --input: 124 30% 30%;
-  --ring: 13 100% 86%;
-  --radius: 1rem;
+/* BÜYÜK YILDIZ: Tailwind v4'e özel sınıflarımızı tanıtıyoruz */
+@theme {
+  --color-lunia-bg: var(--theme-bg);
+  --color-lunia-sidebar: var(--theme-sidebar);
+  --color-lunia-card: var(--theme-card);
+  --color-lunia-border: var(--theme-border);
+  --color-lunia-text: var(--theme-text);
+  --color-lunia-muted: var(--theme-muted);
+  --color-lunia-accent: var(--theme-accent);
 }
 
+/* 1. DARK (Karanlık) - Varsayılan */
+:root, [data-theme="dark"] {
+  --theme-bg: #09090b;
+  --theme-sidebar: #18181b;
+  --theme-card: #27272a;
+  --theme-border: #3f3f46;
+  --theme-text: #fafafa;
+  --theme-muted: #a1a1aa;
+  --theme-accent: #6366f1; 
+}
+
+/* 2. LIGHT (Aydınlık) */
+[data-theme="light"] {
+  --theme-bg: #ffffff;
+  --theme-sidebar: #f4f4f5;
+  --theme-card: #e4e4e7;
+  --theme-border: #d4d4d8;
+  --theme-text: #09090b;
+  --theme-muted: #71717a;
+  --theme-accent: #0ea5e9; 
+}
+
+/* 3. NATURAL (Doğal) */
+[data-theme="natural"] {
+  --theme-bg: #1c211e;
+  --theme-sidebar: #242a26;
+  --theme-card: #2c332e;
+  --theme-border: #363f39;
+  --theme-text: #e6ede9;
+  --theme-muted: #9eb0a5;
+  --theme-accent: #10b981; 
+}
+
+/* 4. SOFT (Yumuşak Krem) */
+[data-theme="soft"] {
+  --theme-bg: #faf9f6;
+  --theme-sidebar: #f2eee9;
+  --theme-card: #e8e2d9;
+  --theme-border: #d6cfc4;
+  --theme-text: #4a443f;
+  --theme-muted: #8c8277;
+  --theme-accent: #d946ef; 
+}
+
+/* SHADCN VE V4 KURALLARI */
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));

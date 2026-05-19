@@ -191,9 +191,9 @@ function ChatScreenInner() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            disabled={isLoading || isLoadingMessages}
+            disabled={isLoading}
             placeholder="Mesajını buraya yaz..."
-            className="w-full bg-[#111115] border border-lunia-border text-lunia-text px-6 py-4 rounded-full focus:outline-none focus:border-lunia-accent focus:ring-1 focus:ring-lunia-accent transition-all shadow-lg shadow-black/50 disabled:opacity-50 pr-14"
+            className="w-full bg-lunia-card border border-lunia-border text-lunia-text px-6 py-4 rounded-full focus:outline-none focus:border-lunia-accent transition-all shadow-lg disabled:opacity-50 pr-14"
           />
           <button
             type="submit"
