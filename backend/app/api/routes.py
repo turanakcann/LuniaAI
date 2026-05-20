@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from datetime import datetime
 import json
+from pydantic import BaseModel
 
 # Şemalarımızı schemas.py'den temiz bir şekilde içeri alıyoruz
 from app.models.schemas import DynamicChatRequest, DynamicChatResponse, SessionOut, MessageOut
@@ -225,3 +226,27 @@ async def export_user_data(
             media_type="text/plain; charset=utf-8",
             headers={"Content-Disposition": 'attachment; filename="lunia-export.txt"'},
         )
+
+class RenameChatRequest(BaseModel):
+    title: str
+
+@router.put("/sessions/{session_id}")
+async def rename_chat_session(
+    session_id: str,
+    request: RenameChatRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # DÜZELTME 2: current_user.id, veritabanı yapına uygun olarak str() içine alındı!
+    session = db.query(ChatSession).filter(
+        ChatSession.id == session_id,
+        ChatSession.user_id == str(current_user.id)
+    ).first()
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Sohbet oturumu bulunamadı veya yetkiniz yok.")
+
+    session.title = request.title[:50]
+    db.commit()
+    
+    return {"message": "Sohbet adı güncellendi", "title": session.title}

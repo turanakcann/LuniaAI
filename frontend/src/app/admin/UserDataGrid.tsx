@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import api from "@/src/lib/api";
+import api from "@/src/lib/api"; // Eğer hata verirse "@/lib/api" olarak düzelt
 import { Ban, CheckCircle } from "lucide-react";
 
 type UserData = {
@@ -79,7 +79,7 @@ export default function UserDataGrid() {
           <thead>
             <tr className="bg-lunia-bg/50 border-b border-lunia-border transition-colors duration-300">
               <th className="p-4 text-xs font-semibold text-lunia-muted uppercase tracking-wider">Kullanıcı</th>
-              <th className="p-4 text-xs font-semibold text-lunia-muted uppercase tracking-wider">Yetki Değiştir</th>
+              <th className="p-4 text-xs font-semibold text-lunia-muted uppercase tracking-wider">Yetki</th>
               <th className="p-4 text-xs font-semibold text-lunia-muted uppercase tracking-wider">Durum</th>
               <th className="p-4 text-xs font-semibold text-lunia-muted uppercase tracking-wider">Kayıt Tarihi</th>
               <th className="p-4 text-xs font-semibold text-lunia-muted uppercase tracking-wider text-right">İşlem</th>
@@ -88,24 +88,44 @@ export default function UserDataGrid() {
           <tbody className="divide-y divide-lunia-border">
             {users.map((user) => (
               <tr key={user.id} className="hover:bg-lunia-bg/30 transition-colors duration-300">
+                
+                {/* 1. Kullanıcı Bilgisi */}
                 <td className="p-4">
                   <p className="text-sm font-medium text-lunia-text">{user.full_name || "İsimsiz Kullanıcı"}</p>
                   <p className="text-xs text-lunia-muted">{user.email}</p>
                 </td>
+                
+                {/* 2. DİNAMİK YETKİ AÇILIR MENÜSÜ (Dropdown) */}
                 <td className="p-4">
-                  <select
-                    value={user.role_level}
-                    disabled={updatingId === user.id}
-                    onChange={(e) => handleRoleUpdate(user.id, e.target.value)}
-                    className="bg-lunia-bg border border-lunia-border text-lunia-text text-xs rounded-lg px-2 py-1.5 outline-none focus:border-lunia-accent disabled:opacity-50 cursor-pointer transition-colors duration-300"
-                  >
-                    <option value="1">1 - Kullanıcı</option>
-                    <option value="2">2 - Analist</option>
-                    <option value="3">3 - Moderatör</option>
-                    <option value="4">4 - Admin</option>
-                    <option value="5">5 - SuperAdmin</option>
-                  </select>
+                  <div className="relative inline-block w-36">
+                    <select
+                      value={user.role_level}
+                      disabled={updatingId === user.id}
+                      onChange={(e) => handleRoleUpdate(user.id, e.target.value)}
+                      className={`appearance-none w-full px-3 py-1.5 text-xs font-semibold rounded-lg border outline-none cursor-pointer disabled:opacity-50 transition-colors duration-300 ${
+                        user.role_level === 5 
+                          ? "bg-red-500/10 text-red-500 border-red-500/20 focus:border-red-500" 
+                          : user.role_level >= 3
+                          ? "bg-purple-500/10 text-purple-500 border-purple-500/20 focus:border-purple-500"
+                          : "bg-lunia-accent/10 text-lunia-accent border-lunia-accent/20 focus:border-lunia-accent"
+                      }`}
+                    >
+                      <option value="1" className="bg-lunia-bg text-lunia-text">1 - Kullanıcı</option>
+                      <option value="2" className="bg-lunia-bg text-lunia-text">2 - Analist</option>
+                      <option value="3" className="bg-lunia-bg text-lunia-text">3 - Moderatör</option>
+                      <option value="4" className="bg-lunia-bg text-lunia-text">4 - Admin</option>
+                      <option value="5" className="bg-lunia-bg text-lunia-text">5 - SuperAdmin</option>
+                    </select>
+                    {/* Aşağı Ok İkonu */}
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                      <svg className="fill-current h-3 w-3 opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                      </svg>
+                    </div>
+                  </div>
                 </td>
+                
+                {/* 3. Durum Bilgisi */}
                 <td className="p-4">
                   <span className={`px-2.5 py-1 text-xs font-semibold rounded-lg border ${
                     user.is_active 
@@ -115,9 +135,13 @@ export default function UserDataGrid() {
                     {user.is_active ? "Aktif" : "Askıda"}
                   </span>
                 </td>
+                
+                {/* 4. Kayıt Tarihi */}
                 <td className="p-4 text-sm text-lunia-muted">
                   {new Date(user.created_at).toLocaleDateString("tr-TR")}
                 </td>
+                
+                {/* 5. İşlem Butonları */}
                 <td className="p-4 text-right">
                   <button
                     onClick={() => handleToggleBan(user.id, user.is_active)}
@@ -132,6 +156,7 @@ export default function UserDataGrid() {
                     {user.is_active ? "Askıya Al" : "Aktif Et"}
                   </button>
                 </td>
+
               </tr>
             ))}
           </tbody>

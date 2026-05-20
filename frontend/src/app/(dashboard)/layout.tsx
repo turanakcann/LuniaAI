@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import api from "@/src/lib/api"; 
-import { MessageSquare, Plus, Menu, X, LogOut, Settings, Trash2, Edit2, Download, AlertTriangle } from "lucide-react";
+import { MessageSquare, Plus, Menu, X, LogOut, Settings, Trash2, Edit2, Download, AlertTriangle, Check } from "lucide-react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
+// ... (Tip tanımlamaları ve getRoleLabel fonksiyonu orijinaliyle aynı kalacak) ...
 type ChatSession = {
   id: string;
   title: string;
@@ -34,7 +35,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
-  // Dinamik verileri tutacağımız state'ler
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [loadingData, setLoadingData] = useState(true);
@@ -42,87 +42,65 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
   const [sessionRefreshKey, setSessionRefreshKey] = useState(0);
 
-  // Modal için bağımsız state'ler
+  // === YENİ: DÜZENLEME STATE'LERİ ===
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editTitleValue, setEditTitleValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const [modalUser, setModalUser] = useState<UserProfile | null>(null);
   const [isModalLoading, setIsModalLoading] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
 
-  // Veri dışa aktarma state'leri
   const [exportFormat, setExportFormat] = useState<"json" | "txt">("json");
   const [isExporting, setIsExporting] = useState(false);
 
-  // Hesap silme state'leri
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  // Tema state'i (Yeni Eklendi)
   const [theme, setTheme] = useState("zen");
-
   const router = useRouter();
 
-  // Bileşen yüklendiğinde kullanıcının kendi verilerini çekiyoruz
+  // (UseEffect blokların aynı kalıyor...)
   useEffect(() => {
     const fetchUserData = async () => {
       setLoadingData(true);
       setSessionsError(null);
-
       try {
         const userRes = await api.get("/auth/me");
         setCurrentUser(userRes.data);
-      } catch (error) {
-        console.error("Kullanıcı bilgisi alınamadı:", error);
-      }
-
+      } catch (error) { console.error(error); }
       try {
         const sessionsRes = await api.get("/chat/sessions");
         setChatSessions(sessionsRes.data);
-      } catch (error) {
-        console.error("Sohbet geçmişi yükleme hatası:", error);
-        setSessionsError("Sohbet geçmişi yüklenemedi");
-      } finally {
-        setLoadingData(false);
-      }
+      } catch (error) { setSessionsError("Sohbet geçmişi yüklenemedi"); } 
+      finally { setLoadingData(false); }
     };
-
     fetchUserData();
   }, [sessionRefreshKey]);
 
-  // Yeni oturum oluşturulduğunda sidebar'ı yenilemek için window event dinle
   useEffect(() => {
-    const handleSessionCreated = () => {
-      setSessionRefreshKey((prev) => prev + 1);
-    };
+    const handleSessionCreated = () => setSessionRefreshKey((prev) => prev + 1);
     window.addEventListener("lunia:session-created", handleSessionCreated);
-    return () => {
-      window.removeEventListener("lunia:session-created", handleSessionCreated);
-    };
+    return () => window.removeEventListener("lunia:session-created", handleSessionCreated);
   }, []);
 
-  // Temayı LocalStorage'dan Çekme ve Uygulama
   useEffect(() => {
     const savedTheme = localStorage.getItem("lunia-theme") || "zen";
     setTheme(savedTheme);
     document.documentElement.setAttribute("data-theme", savedTheme);
   }, []);
 
-  // Modal açıldığında taze kullanıcı verisi çek; kapandığında state'leri sıfırla
   useEffect(() => {
     if (isSettingsOpen) {
       const fetchModalUser = async () => {
         setIsModalLoading(true);
-        setModalError(null);
-        setModalUser(null);
         try {
           const res = await api.get("/auth/me");
           setModalUser(res.data);
-        } catch (error) {
-          console.error("Modal kullanıcı bilgisi alınamadı:", error);
-          setModalError("Hesap bilgileri yüklenemedi");
-        } finally {
-          setIsModalLoading(false);
-        }
+        } catch (error) { setModalError("Hesap bilgileri yüklenemedi"); } 
+        finally { setIsModalLoading(false); }
       };
       fetchModalUser();
     } else {
@@ -132,7 +110,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [isSettingsOpen]);
 
-  // Tema Değiştirme Fonksiyonu
+  useEffect(() => {
+    if (editingSessionId && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [editingSessionId]);
+
   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newTheme = e.target.value;
     setTheme(newTheme);
@@ -143,61 +126,71 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
     e.stopPropagation();
     if (deletingSessionId) return;
-
     setDeletingSessionId(sessionId);
     try {
       await api.delete(`/chat/sessions/${sessionId}`);
       setChatSessions((prev) => prev.filter((s) => s.id !== sessionId));
-
       const currentUrl = window.location.search;
-      const params = new URLSearchParams(currentUrl);
-      if (params.get("session") === sessionId) {
+      if (new URLSearchParams(currentUrl).get("session") === sessionId) {
         router.push("/chat");
       }
-    } catch (error) {
-      console.error("Oturum silme hatası:", error);
-    } finally {
-      setDeletingSessionId(null);
-    }
+    } catch (error) { console.error(error); } 
+    finally { setDeletingSessionId(null); }
   };
 
-  const handleLogout = () => {
-    Cookies.remove("token");
-    window.location.href = "/login";
-  };
+  const handleLogout = () => { Cookies.remove("token"); window.location.href = "/login"; };
 
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const response = await api.get(`/chat/export?format=${exportFormat}`, {
-        responseType: "blob",
-      });
-      const url = URL.createObjectURL(response.data);
+      const res = await api.get(`/chat/export?format=${exportFormat}`, { responseType: "blob" });
+      const url = URL.createObjectURL(res.data);
       const a = document.createElement("a");
-      a.href = url;
-      a.download = exportFormat === "json" ? "lunia-export.json" : "lunia-export.txt";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Dışa aktarma hatası:", error);
-    } finally {
-      setIsExporting(false);
-    }
+      a.href = url; a.download = `lunia-export.${exportFormat}`;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    } catch (error) { console.error(error); } 
+    finally { setIsExporting(false); }
   };
 
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
-    setDeleteError(null);
     try {
       await api.delete("/auth/account", { data: { password: deletePassword } });
-      Cookies.remove("token");
-      router.push("/login");
-    } catch {
-      setDeleteError("Şifre hatalı veya bir hata oluştu.");
-    } finally {
-      setIsDeleting(false);
+      Cookies.remove("token"); router.push("/login");
+    } catch { setDeleteError("Şifre hatalı."); } 
+    finally { setIsDeleting(false); }
+  };
+
+  // === YENİ: İSİM DÜZENLEME FONKSİYONLARI ===
+  const startEditing = (e: React.MouseEvent, session: ChatSession) => {
+    e.stopPropagation();
+    setEditingSessionId(session.id);
+    setEditTitleValue(session.title);
+  };
+
+  const saveRename = async (sessionId: string) => {
+    if (!editTitleValue.trim()) {
+      setEditingSessionId(null);
+      return;
+    }
+    
+    try {
+      // ÖNCEKİ: await api.put(`/chat/sessions/${sessionId}`, { ... })
+      // ŞİMDİKİ: Yolu API yapısına uygun hale getirdik
+      await api.put(`/chat/sessions/${sessionId}`, { title: editTitleValue });
+      
+      setChatSessions(prev => prev.map(s => s.id === sessionId ? { ...s, title: editTitleValue } : s));
+    } catch (error) {
+      console.error("Yeniden adlandırma hatası", error);
+    }
+    setEditingSessionId(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, sessionId: string) => {
+    if (e.key === "Enter") {
+      e.currentTarget.blur(); // Doğrudan odaktan çıkar, onBlur fonksiyonunu tetikler.
+    } else if (e.key === "Escape") {
+      setEditingSessionId(null);
     }
   };
 
@@ -207,15 +200,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className={`${isSidebarOpen ? "w-72" : "w-0 -translate-x-full"} transition-all duration-300 ease-in-out shrink-0 bg-lunia-sidebar border-r border-lunia-border flex flex-col justify-between absolute md:relative z-20 h-full`}>
         <div className="p-4 flex flex-col h-full overflow-hidden">
           <div className="flex items-center justify-between mb-6 shrink-0">
-            <button 
-              onClick={() => window.location.href = "/chat"} 
-              className="text-xl font-bold tracking-wider text-lunia-text hover:text-lunia-accent transition-colors"
-            >
+            <button onClick={() => window.location.href = "/chat"} className="text-xl font-bold tracking-wider text-lunia-text hover:text-lunia-accent transition-colors">
               Lunia.ai
             </button>
-            <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-lunia-muted hover:text-white">
-              <X size={20} />
-            </button>
+            <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-lunia-muted hover:text-white"><X size={20} /></button>
           </div>
 
           <button onClick={() => router.push("/chat")} className="w-full flex items-center justify-center gap-2 bg-lunia-accent/10 border border-lunia-accent/30 hover:border-lunia-accent hover:bg-lunia-accent/20 text-lunia-accent py-2.5 rounded-xl transition-all mb-6 group font-medium shrink-0">
@@ -237,25 +225,53 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 chatSessions.map((session) => (
                   <div
                     key={session.id}
-                    onClick={() => router.push(`/chat?session=${session.id}`)}
-                    className="group flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-lunia-border/50 cursor-pointer text-sm text-lunia-muted hover:text-lunia-text transition-all"
+                    onClick={() => {
+                      if (editingSessionId !== session.id) {
+                        router.push(`/chat?session=${session.id}`);
+                      }
+                    }}
+                    className={`group flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer text-sm transition-all ${
+                      editingSessionId === session.id 
+                        ? "bg-lunia-border/50 text-lunia-text" 
+                        : "text-lunia-muted hover:text-lunia-text hover:bg-lunia-border/50"
+                    }`}
                   >
-                    <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="flex items-center gap-3 overflow-hidden flex-1">
                       <MessageSquare size={16} className="shrink-0" />
-                      <span className="truncate">{session.title}</span>
+                      
+                      {/* EĞER BU SEANS DÜZENLENİYORSA INPUT GÖSTER, YOKSA YAZIYI GÖSTER */}
+                      {editingSessionId === session.id ? (
+                        <input
+                          ref={inputRef}
+                          value={editTitleValue}
+                          onChange={(e) => setEditTitleValue(e.target.value)}
+                          onBlur={() => saveRename(session.id)}
+                          onKeyDown={(e) => handleKeyDown(e, session.id)}
+                          className="flex-1 bg-transparent border-b border-lunia-accent outline-none text-lunia-text w-full mr-2 font-medium"
+/>
+                      ) : (
+                        <span className="truncate">{session.title}</span>
+                      )}
                     </div>
+
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      <button className="p-1 hover:text-lunia-accent transition-colors"><Edit2 size={14} /></button>
+                      {/* DÜZENLEME İKONU */}
+                      {editingSessionId === session.id ? (
+                        <button onClick={(e) => { e.stopPropagation(); saveRename(session.id); }} className="p-1 text-emerald-500 hover:text-emerald-400">
+                          <Check size={14} />
+                        </button>
+                      ) : (
+                        <button onClick={(e) => startEditing(e, session)} className="p-1 hover:text-lunia-accent transition-colors">
+                          <Edit2 size={14} />
+                        </button>
+                      )}
+
                       <button
                         onClick={(e) => handleDeleteSession(e, session.id)}
                         disabled={deletingSessionId === session.id}
                         className="p-1 hover:text-red-400 transition-colors disabled:opacity-50"
                       >
-                        {deletingSessionId === session.id ? (
-                          <span className="block w-3.5 h-3.5 border-2 border-red-400/50 border-t-red-400 rounded-full animate-spin" />
-                        ) : (
-                          <Trash2 size={14} />
-                        )}
+                        {deletingSessionId === session.id ? <span className="block w-3.5 h-3.5 border-2 border-red-400/50 border-t-red-400 rounded-full animate-spin" /> : <Trash2 size={14} />}
                       </button>
                     </div>
                   </div>
@@ -265,6 +281,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
 
+        {/* ... (Alt Menü ve Modallar orijinal kodundakiyle aynı) ... */}
+        
+        {/* ALT MENÜ */}
         <div className="p-4 border-t border-lunia-border space-y-1 bg-lunia-sidebar shrink-0">
           {!loadingData && currentUser && (
             <div className="mb-3 px-3 py-2 bg-lunia-card rounded-xl border border-lunia-border flex items-center gap-3">
@@ -289,6 +308,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
+      {/* AYARLAR MODALI */}
       {isSettingsOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-lunia-card border border-lunia-border w-full max-w-md rounded-2xl p-6 shadow-2xl transition-colors duration-300">
@@ -391,6 +411,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       )}
 
+      {/* HESAP SİLME ONAY MODALI */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-lunia-card border border-red-500/40 w-full max-w-md rounded-2xl p-6 shadow-2xl transition-colors duration-300">

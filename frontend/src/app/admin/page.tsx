@@ -1,13 +1,43 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Shield } from "lucide-react";
 import MetricsCharts from "@/components/admin/MetricsCharts";
 import UserDataGrid from "@/components/admin/UserDataGrid";
 import ActivityFeed from "@/components/admin/ActivityFeed";
+import api from "@/src/lib/api"; 
 
 export default function AdminPage() {
   const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    const verifyAdmin = async () => {
+      try {
+        const res = await api.get("/auth/me");
+        // Yetki seviyesi 4'ten (Admin) küçükse sohbete fırlat!
+        if (res.data.role_level < 4) {
+          router.replace("/chat");
+        } else {
+          setIsAuthorized(true);
+        }
+      } catch (error) {
+        // Token yoksa veya patladıysa logine at
+        router.replace("/login");
+      }
+    };
+    verifyAdmin();
+  }, [router]);
+
+  // Yetki doğrulanana kadar yükleme ekranı göster
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-lunia-bg flex items-center justify-center text-lunia-muted transition-colors duration-300">
+        Güvenlik kontrolü yapılıyor...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-lunia-bg text-lunia-text transition-colors duration-300">
