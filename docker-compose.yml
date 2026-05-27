@@ -8,10 +8,8 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env
-    volumes:
-      - ./backend/app:/code/app  # Canlı kod güncellemesi için
-    restart: unless-stopped
+      - ./backend/.env  # Backend'in kendi .env dosyası
+    restart: always     # unless-stopped yerine always kullanmak sunucu restart attığında kesin kalkmasını sağlar
     networks:
       - lunia_network
 
@@ -22,15 +20,13 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - .env
-    volumes:
-      - ./frontend/src:/app/src  # Canlı kod güncellemesi için
+      - ./frontend/.env  # Frontend'in kendi .env dosyası
     depends_on:
-      - backend                  # Önce backend ayağa kalksın
-    restart: unless-stopped
+      - backend          # Önce backend ayağa kalksın
+    restart: always
     networks:
       - lunia_network
 
 networks:
   lunia_network:
-    driver: bridge               # İki konteynerin birbiriyle konuşmasını sağlar
+    driver: bridge       # İki konteynerin güvenli şekilde haberleşmesini sağlar
