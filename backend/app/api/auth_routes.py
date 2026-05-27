@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from pydantic import BaseModel # 👈 BÜYÜK YILDIZ 1: Bunu import etmeliyiz
+from pydantic import BaseModel
+from datetime import timedelta # 👈 BÜYÜK YILDIZ 1: Bunu import etmeliyiz
 import logging
 
 from app.core.security import hash_password, verify_password, create_access_token
@@ -60,7 +61,11 @@ async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(
         return {"message": "Eğer bu e-posta adresi kayıtlıysa, bir sıfırlama linki gönderilecektir."}
     
     # 15 dakikalık geçici bir token üretiyoruz
-    reset_token = create_access_token(data={"sub": user.email}, expires_delta=15)
+    reset_token = create_access_token(data={"sub": user.email}, expires_delta=timedelta(minutes=15))
+    
+    print(f"\n" + "="*50)
+    print(f"🚨 [TEST LİNKİ]: http://localhost:3000/reset-password?token={reset_token}")
+    print("="*50 + "\n")
     
     # Mail gönder
     success = mailer.send_reset_password_email(user.email, reset_token)
@@ -78,7 +83,8 @@ class UserResetPassword(BaseModel):
 async def reset_password(data: UserResetPassword, db: Session = Depends(get_db)):
     try:
         # 1. Token'ı doğrula ve içindeki e-postayı oku
-        payload = jwt.decode(data.token, os.getenv("SECRET_KEY"), algorithms=["HS256"])
+        secret_key = os.getenv("SECRET_KEY", "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7")
+        payload = jwt.decode(data.token, secret_key, algorithms=["HS256"])
         email: str = payload.get("sub")
         if email is None:
             raise HTTPException(status_code=400, detail="Geçersiz veya süresi dolmuş token.")

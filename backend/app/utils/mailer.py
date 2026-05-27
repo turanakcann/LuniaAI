@@ -10,7 +10,7 @@ class LuniaMailer:
     def __init__(self):
         self.sender_email = os.getenv("SMTP_USER")
         self.password = os.getenv("SMTP_PASSWORD")
-        self.smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+        self.smtp_server = os.getenv("SMTP_SERVER", "mail.lunia.ai")
         self.smtp_port = int(os.getenv("SMTP_PORT", 587))
 
     def send_reset_password_email(self, target_email: str, token: str):
