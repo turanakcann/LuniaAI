@@ -7,7 +7,6 @@ import api from "@/src/lib/api";
 import { MessageSquare, Plus, Menu, X, LogOut, Settings, Trash2, Edit2, Download, AlertTriangle, Check } from "lucide-react";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-// ... (Tip tanımlamaları ve getRoleLabel fonksiyonu orijinaliyle aynı kalacak) ...
 type ChatSession = {
   id: string;
   title: string;
@@ -20,17 +19,6 @@ type UserProfile = {
   role_level: number;
 };
 
-function getRoleLabel(roleLevel: number): string {
-  switch (roleLevel) {
-    case 1: return "Kullanıcı";
-    case 2: return "Analist";
-    case 3: return "Moderatör";
-    case 4: return "Admin";
-    case 5: return "SuperAdmin";
-    default: return "Bilinmiyor";
-  }
-}
-
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -42,7 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
   const [sessionRefreshKey, setSessionRefreshKey] = useState(0);
 
-  // === YENİ: DÜZENLEME STATE'LERİ ===
+  // === DÜZENLEME STATE'LERİ ===
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editTitleValue, setEditTitleValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -62,7 +50,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [theme, setTheme] = useState("zen");
   const router = useRouter();
 
-  // (UseEffect blokların aynı kalıyor...)
   useEffect(() => {
     const fetchUserData = async () => {
       setLoadingData(true);
@@ -161,7 +148,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     finally { setIsDeleting(false); }
   };
 
-  // === YENİ: İSİM DÜZENLEME FONKSİYONLARI ===
   const startEditing = (e: React.MouseEvent, session: ChatSession) => {
     e.stopPropagation();
     setEditingSessionId(session.id);
@@ -175,10 +161,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
     
     try {
-      // ÖNCEKİ: await api.put(`/chat/sessions/${sessionId}`, { ... })
-      // ŞİMDİKİ: Yolu API yapısına uygun hale getirdik
       await api.put(`/chat/sessions/${sessionId}`, { title: editTitleValue });
-      
       setChatSessions(prev => prev.map(s => s.id === sessionId ? { ...s, title: editTitleValue } : s));
     } catch (error) {
       console.error("Yeniden adlandırma hatası", error);
@@ -188,7 +171,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, sessionId: string) => {
     if (e.key === "Enter") {
-      e.currentTarget.blur(); // Doğrudan odaktan çıkar, onBlur fonksiyonunu tetikler.
+      e.currentTarget.blur();
     } else if (e.key === "Escape") {
       setEditingSessionId(null);
     }
@@ -239,7 +222,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <div className="flex items-center gap-3 overflow-hidden flex-1">
                       <MessageSquare size={16} className="shrink-0" />
                       
-                      {/* EĞER BU SEANS DÜZENLENİYORSA INPUT GÖSTER, YOKSA YAZIYI GÖSTER */}
                       {editingSessionId === session.id ? (
                         <input
                           ref={inputRef}
@@ -248,14 +230,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                           onBlur={() => saveRename(session.id)}
                           onKeyDown={(e) => handleKeyDown(e, session.id)}
                           className="flex-1 bg-transparent border-b border-lunia-accent outline-none text-lunia-text w-full mr-2 font-medium"
-/>
+                        />
                       ) : (
                         <span className="truncate">{session.title}</span>
                       )}
                     </div>
 
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      {/* DÜZENLEME İKONU */}
                       {editingSessionId === session.id ? (
                         <button onClick={(e) => { e.stopPropagation(); saveRename(session.id); }} className="p-1 text-emerald-500 hover:text-emerald-400">
                           <Check size={14} />
@@ -280,31 +261,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
         </div>
-
-        {/* ... (Alt Menü ve Modallar orijinal kodundakiyle aynı) ... */}
         
         {/* ALT MENÜ */}
-        <div className="p-4 border-t border-lunia-border space-y-1 bg-lunia-sidebar shrink-0">
+        <div className="p-4 border-t border-lunia-border space-y-3 bg-lunia-sidebar shrink-0">
           {!loadingData && currentUser && (
-            <div className="mb-3 px-3 py-2 bg-lunia-card rounded-xl border border-lunia-border flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-lunia-accent/20 flex items-center justify-center text-lunia-accent font-bold">
+            <div className="px-3 py-2 bg-lunia-card rounded-xl border border-lunia-border flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-lunia-accent/20 flex items-center justify-center text-lunia-accent font-bold shrink-0">
                 {currentUser.full_name.charAt(0).toUpperCase()}
               </div>
               <div className="overflow-hidden">
                 <p className="text-sm font-semibold text-lunia-text truncate">{currentUser.full_name}</p>
-                <p className="text-xs text-lunia-muted truncate">Seviye {currentUser.role_level} Yetki</p>
+                <p className="text-xs text-lunia-muted truncate">{currentUser.email}</p>
               </div>
             </div>
           )}
 
-          <button onClick={() => setIsSettingsOpen(true)} className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl hover:bg-lunia-border/50 text-sm text-lunia-muted hover:text-lunia-text transition-all font-medium">
-            <Settings size={18} />
-            <span>Sistem Ayarları</span>
-          </button>
-          <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-2.5 w-full rounded-xl hover:bg-red-900/10 hover:text-red-400 text-sm text-lunia-muted transition-all font-medium">
-            <LogOut size={18} />
-            <span>Çıkış Yap</span>
-          </button>
+          {/* BUTONLAR YAN YANA GETİRİLDİ */}
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setIsSettingsOpen(true)} 
+              className="flex-1 flex items-center justify-center gap-2 px-2 py-2.5 rounded-xl hover:bg-lunia-border/50 text-xs text-lunia-muted hover:text-lunia-text transition-all font-medium"
+            >
+              <Settings size={16} />
+              <span>Ayarlar</span>
+            </button>
+            <button 
+              onClick={handleLogout} 
+              className="flex-1 flex items-center justify-center gap-2 px-2 py-2.5 rounded-xl hover:bg-red-900/10 hover:text-red-400 text-xs text-lunia-muted transition-all font-medium"
+            >
+              <LogOut size={16} />
+              <span>Çıkış Yap</span>
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -318,7 +306,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             
             <div className="space-y-6">
-              {/* Hesap Bilgileri Kartı (bg-[#18181b] yerine bg-lunia-bg) */}
               <div className="bg-lunia-bg p-4 rounded-xl border border-lunia-border transition-colors duration-300">
                 <p className="text-sm text-lunia-muted font-semibold mb-3">Hesap Bilgileri</p>
                 {isModalLoading && (
@@ -333,16 +320,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <div className="space-y-2">
                     <div>
                       <p className="text-xs text-lunia-muted">İsim</p>
-                      {/* text-white yerine text-lunia-text */}
                       <p className="text-lunia-text font-medium">{modalUser.full_name || "İsimsiz Kullanıcı"}</p>
                     </div>
                     <div>
                       <p className="text-xs text-lunia-muted">E-posta</p>
                       <p className="text-lunia-text font-medium">{modalUser.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-lunia-muted">Yetki Seviyesi</p>
-                      <p className="text-lunia-text font-medium">{getRoleLabel(modalUser.role_level)}</p>
                     </div>
                   </div>
                 )}

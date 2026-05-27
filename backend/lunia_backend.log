@@ -664,3 +664,209 @@ FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER B
  LIMIT %(param_1)s]
 [parameters: {'param_1': 100}]
 (Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-20 12:40:13,682 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-20 13:26:22,366 - app.api.auth_routes - INFO - Login: turanakcnnofficial@gmail.com baþarýyla giriþ yaptý (role_level=5).
+2026-05-20 13:27:20,383 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-20 13:27:22,712 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:28:39,095 - app.main - INFO - Lunia AI Backend baþarýyla baþlatýldý.
+2026-05-27 02:29:05,923 - app.api.auth_routes - INFO - Login: turanakcnnofficial@gmail.com baþarýyla giriþ yaptý (role_level=5).
+2026-05-27 02:29:19,953 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:29:20,556 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:29:48,068 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:30:18,085 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:30:48,197 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:31:18,067 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:31:48,401 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:32:18,449 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:32:49,040 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:33:19,614 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:38:52,595 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:38:52,866 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:39:02,791 - app.api.admin_routes - INFO - Role Update: Kullanýcý ilker123@gmail.com yetkisi turanakcnnofficial@gmail.com tarafýndan 3 yapýldý.
+2026-05-27 02:39:21,331 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:39:51,325 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:40:21,391 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:40:51,434 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:41:21,340 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:41:43,283 - app.api.admin_routes - INFO - Role Update: Kullanýcý ilker123@gmail.com yetkisi turanakcnnofficial@gmail.com tarafýndan 5 yapýldý.
+2026-05-27 02:41:51,380 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:42:15,182 - app.api.auth_routes - INFO - Login: ilker123@gmail.com baþarýyla giriþ yaptý (role_level=5).
+2026-05-27 02:42:22,253 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:42:22,529 - app.api.admin_routes - ERROR - Activity feed veritabanýndan çekilirken hata oluþtu: (psycopg2.errors.UndefinedTable) relation "system_logs" does not exist
+LINE 2: FROM system_logs LEFT OUTER JOIN users ON system_logs.user_i...
+             ^
+
+[SQL: SELECT system_logs.id AS system_logs_id, system_logs.user_id AS system_logs_user_id, system_logs.log_type AS system_logs_log_type, system_logs.details AS system_logs_details, system_logs.created_at AS system_logs_created_at, users.email AS users_email 
+FROM system_logs LEFT OUTER JOIN users ON system_logs.user_id = users.id ORDER BY system_logs.created_at DESC 
+ LIMIT %(param_1)s]
+[parameters: {'param_1': 100}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-05-27 02:42:48,894 - app.api.admin_routes - INFO - Role Update: Kullanýcý ilker123@gmail.com yetkisi ilker123@gmail.com tarafýndan 4 yapýldý.

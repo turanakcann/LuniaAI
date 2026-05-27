@@ -1,18 +1,13 @@
 import type { Metadata } from "next";
-import { Space_Mono } from "next/font/google";
+import { Inter } from "next/font/google"; // Modern SaaS fontu
 import "./globals.css";
 import { ThemeProvider } from "@/src/context/ThemeContext";
 
-// 90'lar Terminal Hissi
-const spaceMono = Space_Mono({ 
-  weight: ["400", "700"], 
-  subsets: ["latin"],
-  variable: "--font-space-mono",
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "Lunia.ai // Terminal",
-  description: "Enterprise-grade digital companion.",
+  title: "Lunia.ai // Dijital Yoldaş",
+  description: "Zihnini anlayan, yargılamayan dijital yoldaşın.",
 };
 
 export default function RootLayout({
@@ -21,11 +16,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr">
-      <body className={`${spaceMono.variable} font-mono bg-cyber-black text-cyber-green antialiased selection:bg-cyber-amber selection:text-cyber-black`}>
+    <html lang="tr" data-theme="dark">
+      <body className={`${inter.variable} font-sans bg-lunia-bg text-lunia-text antialiased transition-colors duration-300`}>
         <ThemeProvider>
           {/* Tüm sayfalar bu kapsayıcının içinde renderlanacak */}
-          <div className="relative min-h-screen overflow-hidden">
+          <div className="relative min-h-screen overflow-x-hidden">
             {children}
           </div>
         </ThemeProvider>
